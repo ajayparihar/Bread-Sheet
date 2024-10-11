@@ -5,8 +5,11 @@
 document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('fileInput');
     const searchInput = document.getElementById('searchInput');
+    const container = document.querySelector('.container');
+    let resizeHandle; // Declare resizeHandle variable
     let data = [];
     let lastClickedCell = null;
+    let isResizing = false;
 
     fileInput.addEventListener('change', handleFile, false);
     searchInput.addEventListener('input', handleSearch, false);
@@ -45,6 +48,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log('Data loaded successfully:', data); // Log loaded data
                 displayData(data);
                 showSearchBar(); // Show search bar after file is imported
+                enableResizing(); // Enable resizing after file is loaded
+                container.style.width = '100%'; // Adjust width when file is loaded
             } catch (error) {
                 showAlert('Error reading file: ' + error.message, 'error');
                 console.error('Error reading file:', error); // Log any error
@@ -63,6 +68,39 @@ document.addEventListener('DOMContentLoaded', function () {
     function showSearchBar() {
         const searchContainer = document.getElementById('searchContainer');
         searchContainer.classList.remove('hidden');
+    }
+
+    // Enable resizing
+    function enableResizing() {
+        // Create a resize handle
+        resizeHandle = document.createElement('div');
+        resizeHandle.classList.add('resize-handle');
+        container.appendChild(resizeHandle); // Add the resize handle to the container
+
+        resizeHandle.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            isResizing = true;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isResizing = false;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+
+            const containerRect = container.getBoundingClientRect();
+            const newWidth = e.clientX - containerRect.left;
+            const newHeight = e.clientY - containerRect.top;
+
+            // Set minimum size constraints
+            if (newWidth > 400) {
+                container.style.width = Math.min(window.innerWidth, newWidth) + 'px'; // Allow full width
+            }
+            if (newHeight > 300) {
+                container.style.height = newHeight + 'px';
+            }
+        });
     }
 
     // Display the data in the table
