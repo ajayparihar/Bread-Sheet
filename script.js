@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else if (extension === 'csv' || extension === 'txt') {
                     workbook = XLSX.read(rawData, { type: 'string' });
                 } else {
-                    showAlert('Unsupported file type', 'error');
+                    showAlert('Unsupported file type. Please upload an Excel or CSV file.', 'error');
                     return;
                 }
 
@@ -106,7 +106,12 @@ document.addEventListener('DOMContentLoaded', function () {
     // Display the data in the table
     function displayData(data) {
         const output = document.getElementById('output');
-        output.innerHTML = '';
+        output.innerHTML = ''; // Clear previous output
+
+        if (data.length === 0) {
+            showAlert('No data found in the file.', 'error');
+            return; // Early return if no data is found
+        }
 
         const table = document.createElement('table');
         data.forEach((row, rowIndex) => {
@@ -206,3 +211,4 @@ document.addEventListener('DOMContentLoaded', function () {
         lastClickedCell = cell;
     }
 });
+
