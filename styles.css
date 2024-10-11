@@ -117,8 +117,13 @@ tr:nth-child(even) td {
     background-color: #7289da !important; /* Highlight color for matched search */
 }
 
+.last-clicked {
+    border: 2px solid transparent; /* No outer border */
+    box-shadow: inset 0 0 0 2px #7289da; /* Inner outline color (same as search highlight) */
+}
+
 .hidden {
-    display: none;
+    display: none; /* Ensure hidden class uses display: none */
 }
 
 .toast {

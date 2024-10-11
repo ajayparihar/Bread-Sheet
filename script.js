@@ -2,49 +2,56 @@
 // Version: 1st version
 // Date: 2024-06-04
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const fileInput = document.getElementById('fileInput');
     const searchInput = document.getElementById('searchInput');
-    let data = []; // Initialize with an empty array
+    let data = [];
+    let lastClickedCell = null;
 
-    // Event listeners
     fileInput.addEventListener('change', handleFile, false);
     searchInput.addEventListener('input', handleSearch, false);
-    document.querySelector('.container h1').addEventListener('click', refreshPage, false);
-    document.querySelector('.container h1').addEventListener('auxclick', openNewTabInBackground, false);
 
-    // Function to handle file import
+    // Handle the file input
     function handleFile(e) {
         const file = e.target.files[0];
-        if (!file) return;
+        if (!file) {
+            alert("No file selected.");
+            return;
+        }
 
         const reader = new FileReader();
         const extension = file.name.split('.').pop().toLowerCase();
 
+        // Load the file based on its extension
         reader.onload = (event) => {
-            let rawData = event.target.result;
-            let workbook;
+            try {
+                let rawData = event.target.result;
+                let workbook;
 
-            if (extension === 'xlsx' || extension === 'xls') {
-                rawData = new Uint8Array(rawData);
-                workbook = XLSX.read(rawData, { type: 'array' });
-            } else if (extension === 'csv' || extension === 'txt') {
-                workbook = XLSX.read(rawData, { type: 'string' });
-            } else {
-                showAlert('Unsupported file type', 'error');
-                return;
+                if (extension === 'xlsx' || extension === 'xls') {
+                    rawData = new Uint8Array(rawData);
+                    workbook = XLSX.read(rawData, { type: 'array' });
+                } else if (extension === 'csv' || extension === 'txt') {
+                    workbook = XLSX.read(rawData, { type: 'string' });
+                } else {
+                    showAlert('Unsupported file type', 'error');
+                    return;
+                }
+
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+
+                console.log('Data loaded successfully:', data); // Log loaded data
+                displayData(data);
+                showSearchBar(); // Show search bar after file is imported
+            } catch (error) {
+                showAlert('Error reading file: ' + error.message, 'error');
+                console.error('Error reading file:', error); // Log any error
             }
-
-            const firstSheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[firstSheetName];
-            data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
-            displayData(data);
-            showSearchBar(); // Show search bar after file is imported
-
-            // Save data to localStorage if needed
-            // saveToLocalStorage(data);
         };
 
+        // Read file based on its type
         if (extension === 'xlsx' || extension === 'xls') {
             reader.readAsArrayBuffer(file);
         } else if (extension === 'csv' || extension === 'txt') {
@@ -52,7 +59,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Function to display data in table
+    // Show the search bar
+    function showSearchBar() {
+        const searchContainer = document.getElementById('searchContainer');
+        searchContainer.classList.remove('hidden');
+    }
+
+    // Display the data in the table
     function displayData(data) {
         const output = document.getElementById('output');
         output.innerHTML = '';
@@ -74,45 +87,50 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Add event listener to each non-empty cell
-        table.addEventListener('click', function(e) {
+        table.addEventListener('click', function (e) {
             const target = e.target;
             if (target.tagName === 'TD' && target.classList.contains('non-empty')) {
                 copyToClipboard(target.textContent);
+                highlightCell(target); // Highlight the clicked cell
             }
         });
 
         output.appendChild(table);
     }
 
-    // Function to show search bar
-    function showSearchBar() {
-        const searchBar = document.querySelector('.search-bar');
-        searchBar.classList.remove('hidden');
-    }
-
     // Function to handle search
     function handleSearch() {
-        const searchText = document.getElementById('searchInput').value.trim().toLowerCase(); // Trim whitespace
-
+        const searchText = searchInput.value.trim().toLowerCase();
         const cells = document.querySelectorAll('td.non-empty');
+        let firstMatch = null;
 
         cells.forEach(cell => {
             const text = cell.textContent.toLowerCase();
-            const rowIndex = parseInt(cell.getAttribute('data-row'));
-            const colIndex = parseInt(cell.getAttribute('data-col'));
             if (searchText === '' || !text.includes(searchText)) {
                 cell.classList.remove('highlight');
             } else {
                 cell.classList.add('highlight');
+                if (!firstMatch) {
+                    firstMatch = cell;
+                }
             }
         });
+
+        // Scroll to the first matching cell
+        if (firstMatch) {
+            scrollToVisible(firstMatch);
+        }
     }
 
-    // Function to copy to clipboard
+    // Scroll the element into view
+    function scrollToVisible(element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    }
+
+    // Copy text to clipboard
     function copyToClipboard(value) {
-        const trimmedValue = value.trim(); // Remove leading and trailing spaces
         const textarea = document.createElement('textarea');
-        textarea.value = trimmedValue;
+        textarea.value = value.trim();
         textarea.setAttribute('readonly', '');
         textarea.style.position = 'absolute';
         textarea.style.left = '-9999px';
@@ -120,17 +138,14 @@ document.addEventListener('DOMContentLoaded', function() {
         textarea.select();
         document.execCommand('copy');
         document.body.removeChild(textarea);
-
-        showAlert(`Copied! - "${trimmedValue}"`, 'success');
+        showAlert(`Copied! - "${textarea.value}"`, 'success');
     }
 
-    // Function to show alert
+    // Show alert
     function showAlert(message, type) {
         const toast = document.createElement('div');
-        toast.classList.add('toast');
-        toast.classList.add(type);
+        toast.classList.add('toast', type);
         toast.textContent = message;
-
         document.body.appendChild(toast);
 
         setTimeout(() => {
@@ -139,25 +154,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 toast.classList.remove('show');
                 setTimeout(() => {
                     document.body.removeChild(toast);
-                }, 300); // Remove toast after transition ends
-            }, 2000); // Show toast for 2 seconds
-        }, 100); // Delay before showing toast
+                }, 300);
+            }, 2000);
+        }, 100);
     }
 
-    // Function to refresh the page
-    function refreshPage() {
-        location.reload();
-    }
-
-    // Function to open a new tab in the background
-    function openNewTabInBackground(event) {
-        // Check if the mouse wheel (button 1) is pressed
-        if (event.button === 1) {
-            const newTab = window.open(window.location.href, '_blank');
-            if (newTab) {
-                newTab.blur(); // Blur the new tab to open it in the background
-                window.focus(); // Focus back on the current tab
-            }
+    // Highlight the clicked cell
+    function highlightCell(cell) {
+        if (lastClickedCell) {
+            lastClickedCell.classList.remove('last-clicked');
         }
+        cell.classList.add('last-clicked');
+        lastClickedCell = cell;
     }
 });
