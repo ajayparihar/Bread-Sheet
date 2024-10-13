@@ -1,3 +1,9 @@
+<!-- Bread Sheet - Main HTML File -->
+<!-- Author: Ajay Singh -->
+<!-- Version: 1.0 -->
+<!-- Date: 04-06-2024 -->
+<!-- Description: HTML structure for the Bread Sheet application, including the main container, file input, and search functionality. -->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -6,23 +12,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bread Sheet</title>
 
+    <!-- Favicon and External Resources -->
     <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
     <link rel="manifest" href="favicon_io/site.webmanifest">
     <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" defer></script>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Bread Sheet</h1>
-        <div id="searchContainer" class="search-bar hidden">
-            <input type="text" id="searchInput" placeholder="Search...">
+    <main class="container">
+        <h1 id="projectTitle">Bread Sheet</h1>
+
+        <!-- Search Bar -->
+        <div id="searchContainer" class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search..." aria-label="Search through data">
         </div>
+
+        <!-- Data Output Section -->
         <div id="output"></div>
-        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, .txt">
-    </div>
+
+        <!-- File Upload Button -->
+        <button id="addFileButton" class="add-button" aria-label="Add File">+</button>
+        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, .txt" style="display: none;">
+    </main>
+
+    <!-- Main Script -->
     <script src="script.js"></script>
 </body>
 
