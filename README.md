@@ -18,7 +18,7 @@ The **Bread Sheet** is a web-based copy-paster application designed for efficien
 - **Resizable Container**: Adjust the display area according to your preferences.
 
 ## Usage
-1. **Visit the Application**: Go to the [Bread Sheet Tool](https://ajayparihar.github.io/Bread-Sheet) to access the tool.
+1. **Visit the Application**: Go to the [Bread Sheet](https://ajayparihar.github.io/Bread-Sheet) to access the tool.
 2. **Upload a File**: Click on the "+" button to select and upload a spreadsheet file from your device.
 3. **View Data**: The application will read the file and display its contents in a table format.
 4. **Search for Data**: Use the search bar to find specific data within the table. Matching results will be highlighted.
