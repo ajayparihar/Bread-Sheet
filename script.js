@@ -1,6 +1,6 @@
 // Bread Sheet - Main JavaScript
 // Developer: Ajay Singh
-// Version: 1.0
+// Version: 1.1
 // Date: 04-06-2024
 // Description: This script handles file reading (Excel/CSV), displays data in a table,
 //              provides search functionality, and allows resizing of the main container.
@@ -8,26 +8,69 @@
 document.addEventListener('DOMContentLoaded', init);
 
 function init() {
+    // DOM Elements
     const fileInput = document.getElementById('fileInput');
     const searchContainer = document.querySelector('.search-bar');
     const searchInput = document.getElementById('searchInput');
     const container = document.querySelector('.container');
-    const addFileButton = document.getElementById('addFileButton');
+    const addFileButton = document.querySelector('.add-button');
+    const dragDropInstructions = document.querySelector('.drag-drop-instructions');
     
     let resizeHandle, data = [], lastClickedCell = null, isResizing = false;
 
     // Event Listeners
     fileInput.addEventListener('change', handleFileUpload);
     searchInput.addEventListener('input', debounce(handleSearch, 300));
-    addFileButton.addEventListener('click', () => fileInput.click());
+    addFileButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        fileInput.value = '';
+        fileInput.click();
+    });
     document.getElementById('projectTitle').addEventListener('click', refreshPage);
     document.getElementById('projectTitle').addEventListener('mousedown', handleTitleMouseDown);
+
+    // Drag-and-Drop Event Listeners
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('drop', handleFileDrop);
+    document.addEventListener('dragenter', handleDragEnter);
+    document.addEventListener('dragleave', handleDragLeave);
 
     // Initially hide the search bar
     searchContainer.classList.remove('visible');
 
+    // Handle file upload via input
     function handleFileUpload(event) {
-        const file = event.target.files[0];
+        try {
+            const file = event.target.files[0];
+            if (!file) return showAlert("No file selected.", "error");
+
+            const reader = new FileReader();
+            const extension = file.name.split('.').pop().toLowerCase();
+
+            if (!isValidFileType(extension)) {
+                fileInput.value = '';
+                return showAlert('Unsupported file type. Please upload an Excel or CSV file.', 'error');
+            }
+
+            reader.onerror = () => {
+                showAlert('Error reading file.', 'error');
+                fileInput.value = '';
+            };
+
+            reader.onload = (e) => loadData(e.target.result, extension);
+            const readMethod = ['xlsx', 'xls'].includes(extension) ? 'readAsArrayBuffer' : 'readAsText';
+            reader[readMethod](file);
+        } catch (error) {
+            showAlert('Error processing file: ' + error.message, 'error');
+            fileInput.value = '';
+        }
+    }
+
+    // Handle file drop via drag-and-drop
+    function handleFileDrop(event) {
+        event.preventDefault();
+        dragDropInstructions.classList.remove('drag-over');
+        const file = event.dataTransfer.files[0];
         if (!file) return showAlert("No file selected.", "error");
 
         const reader = new FileReader();
@@ -37,9 +80,27 @@ function init() {
 
         reader.onload = (e) => loadData(e.target.result, extension);
         const readMethod = ['xlsx', 'xls'].includes(extension) ? 'readAsArrayBuffer' : 'readAsText';
-        reader[readMethod](file); // Dynamically call read method
+        reader[readMethod](file);
     }
 
+    // Prevent default behavior for drag over
+    function handleDragOver(event) {
+        event.preventDefault();
+    }
+
+    // Highlight drag-and-drop area on drag enter
+    function handleDragEnter(event) {
+        event.preventDefault();
+        dragDropInstructions.classList.add('drag-over');
+    }
+
+    // Remove highlight from drag-and-drop area on drag leave
+    function handleDragLeave(event) {
+        event.preventDefault();
+        dragDropInstructions.classList.remove('drag-over');
+    }
+
+    // Load data from the uploaded file
     function loadData(rawData, extension) {
         try {
             const workbook = extension === 'xlsx' || extension === 'xls' 
@@ -53,52 +114,75 @@ function init() {
             showSearchBar();
             enableResizing();
             container.style.width = '100%';
+            reduceDragDropArea();
         } catch (error) {
             showAlert('Error reading file: ' + error.message, 'error');
             console.error('Error reading file:', error);
         }
     }
 
+    // Validate file type
     function isValidFileType(extension) {
         return ['xlsx', 'xls', 'csv', 'txt'].includes(extension);
     }
 
+    // Show search bar
     function showSearchBar() {
-        searchContainer.classList.add('visible'); // Show search bar
-        searchInput.disabled = false; // Enable search input
+        searchContainer.classList.add('visible');
+        searchInput.disabled = false;
     }
 
-    // Resizing Functionality
+    // Reduce drag-and-drop area size
+    function reduceDragDropArea() {
+        dragDropInstructions.style.padding = '5px';
+        dragDropInstructions.style.fontSize = '0.8em';
+    }
+
+    // Enable resizing functionality
     function enableResizing() {
         resizeHandle = createResizeHandle();
         container.appendChild(resizeHandle);
         addResizeListeners();
     }
 
+    // Create resize handle element
     function createResizeHandle() {
         const handle = document.createElement('div');
         handle.classList.add('resize-handle');
         return handle;
     }
 
+    // Add event listeners for resizing
     function addResizeListeners() {
         resizeHandle.addEventListener('mousedown', () => (isResizing = true));
         document.addEventListener('mouseup', () => (isResizing = false));
         document.addEventListener('mousemove', resizeContainer);
     }
 
+    // Resize container based on mouse movement
     function resizeContainer(event) {
         if (!isResizing) return;
+        event.preventDefault();
 
         const { left, top } = container.getBoundingClientRect();
-        const newWidth = Math.min(window.innerWidth, Math.max(400, event.clientX - left)) + 'px';
-        const newHeight = Math.max(300, event.clientY - top) + 'px';
+        const minWidth = 400;
+        const minHeight = 300;
+        const maxWidth = window.innerWidth - 40;
 
-        container.style.width = newWidth;
-        container.style.height = newHeight;
+        const newWidth = Math.min(maxWidth, Math.max(minWidth, event.clientX - left));
+        const newHeight = Math.max(minHeight, event.clientY - top);
+
+        container.style.width = `${newWidth}px`;
+        container.style.height = `${newHeight}px`;
     }
 
-    // Search Functionality
+    // Cleanup event listeners on page unload
+    window.addEventListener('beforeunload', () => {
+        document.removeEventListener('mouseup', () => (isResizing = false));
+        document.removeEventListener('mousemove', resizeContainer);
+    });
+
+    // Handle search functionality
     function handleSearch() {
         const searchText = searchInput.value.trim().toLowerCase();
         const cells = document.querySelectorAll('td.non-empty');
@@ -109,21 +193,24 @@ function init() {
             const isMatch = searchText && text.includes(searchText);
             cell.classList.toggle('highlight', isMatch);
 
-            if (isMatch && !firstMatch) firstMatch = cell; // Set the first match
+            if (isMatch && !firstMatch) firstMatch = cell;
         });
 
-        if (searchText === '') scrollToTop(); // Scroll to the top if the search is cleared
-        else if (firstMatch) setTimeout(() => scrollToVisible(firstMatch), 200); // Scroll to first match
+        if (searchText === '') scrollToTop();
+        else if (firstMatch) setTimeout(() => scrollToVisible(firstMatch), 200);
     }
 
+    // Scroll to the first visible element
     function scrollToVisible(element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
     }
 
+    // Scroll to the top of the output container
     function scrollToTop() {
         document.getElementById('output').scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // Debounce function to limit the rate of function execution
     function debounce(func, delay) {
         let timeout;
         return function (...args) {
@@ -132,39 +219,43 @@ function init() {
         };
     }
 
-    // Page Refresh Functionality
+    // Refresh the page
     function refreshPage() {
-        location.reload(); // Refresh the page
+        location.reload();
     }
 
+    // Handle title mouse down event
     function handleTitleMouseDown(event) {
-        if (event.button === 0) refreshPage(); // Left click refresh
-        else if (event.button === 1) openNewPage(); // Middle click open a new page
+        if (event.button === 0) refreshPage();
+        else if (event.button === 1) openNewPage();
     }
 
+    // Open a new page
     function openNewPage() {
-        window.open("https://ajayparihar.github.io/Bread-Sheet", '_blank'); // Open new page
+        window.open("https://ajayparihar.github.io/Bread-Sheet", '_blank');
     }
 
-    // Data Display Functions
+    // Display data in a table
     function displayData(data) {
         const output = document.getElementById('output');
-        output.innerHTML = ''; // Clear previous data
+        output.innerHTML = '';
 
         const table = document.createElement('table');
         data.forEach((row, rowIndex) => createTableRow(row, rowIndex, table));
-        output.appendChild(table); // Append table to output
+        output.appendChild(table);
     }
 
+    // Create a table row
     function createTableRow(row, rowIndex, table) {
         const tr = document.createElement('tr');
         row.forEach((cell, columnIndex) => {
             const td = createTableCell(cell, rowIndex, columnIndex);
             tr.appendChild(td);
         });
-        table.appendChild(tr); // Append row to table
+        table.appendChild(tr);
     }
 
+    // Create a table cell
     function createTableCell(cell, rowIndex, columnIndex) {
         const td = document.createElement('td');
         td.textContent = cell;
@@ -172,50 +263,52 @@ function init() {
         td.dataset.col = columnIndex;
         if (cell !== '') td.classList.add('non-empty');
         td.addEventListener('click', () => handleCellClick(td));
-        return td; // Return the created table cell
+        return td;
     }
 
+    // Handle cell click event
     function handleCellClick(cell) {
         if (cell.classList.contains('non-empty')) {
-            copyToClipboard(cell.textContent); // Copy cell content
-            highlightCell(cell); // Highlight the clicked cell
+            copyToClipboard(cell.textContent);
+            highlightCell(cell);
         }
     }
 
+    // Copy text to clipboard
     function copyToClipboard(value) {
         navigator.clipboard.writeText(value.trim())
             .then(() => showAlert(`Copied! - "${value.trim()}"`, 'success'))
             .catch(err => showAlert('Failed to copy text: ' + err, 'error'));
     }
 
+    // Highlight the clicked cell
     function highlightCell(cell) {
         if (lastClickedCell) lastClickedCell.classList.remove('last-clicked');
-        cell.classList.add('last-clicked'); // Highlight the last clicked cell
+        cell.classList.add('last-clicked');
         lastClickedCell = cell;
     }
 
+    // Show alert message
     function showAlert(message, type) {
-        // Check for an existing toast and remove it
         const existingToast = document.querySelector('.toast');
         if (existingToast) {
-            existingToast.classList.remove('show'); // Start hiding the existing toast
+            existingToast.classList.remove('show');
             setTimeout(() => {
-                document.body.removeChild(existingToast); // Remove it from the DOM after the transition
-            }, 300); // Match the transition duration in CSS
+                document.body.removeChild(existingToast);
+            }, 300);
         }
 
-        // Create a new toast
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         toast.textContent = message;
-        document.body.appendChild(toast); // Show alert
+        document.body.appendChild(toast);
 
-        setTimeout(() => toast.classList.add('show'), 100); // Delay the show to allow DOM rendering
+        setTimeout(() => toast.classList.add('show'), 100);
         setTimeout(() => {
-            toast.classList.remove('show'); // Start hiding the new toast
+            toast.classList.remove('show');
             setTimeout(() => {
-                document.body.removeChild(toast); // Remove it from the DOM after the transition
-            }, 300); // Match the transition duration in CSS
-        }, 2300); // Toast duration before hiding
+                document.body.removeChild(toast);
+            }, 300);
+        }, 2300);
     }
 }

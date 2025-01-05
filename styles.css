@@ -1,22 +1,24 @@
 /* Bread Sheet - Main Stylesheet */
 /* Author: Ajay Singh */
-/* Version: 1.0 */
+/* Version: 1.1 */
 /* Date: 04-06-2024 */
 /* Description: Styles for Bread Sheet application, including container, table, and toast notifications. */
 
 /* Define CSS Variables for Theme Colors */
 :root {
-    --bg-color: #232529;
-    --container-bg-color: #2c2f33;
-    --text-color: #ffffff;
-    --header-color: #7289da;
-    --table-header-color: #99aab5;
-    --table-even-row-color: #23272a;
-    --table-odd-row-color: #2c2f33;
-    --toast-success-bg: #7289da;
-    --toast-error-bg: #ff0000;
-    --highlight-color: #7289da;
-    --hover-color: #ffffff2a;
+    --color-bg: #232529;
+    --color-container-bg: #2c2f33;
+    --color-text: #ffffff;
+    --color-primary: #7289da;
+    --color-secondary: #99aab5;
+    --color-row-even: #23272a;
+    --color-row-odd: #2c2f33;
+    --color-toast-success: #7289da;
+    --color-toast-error: #ff0000;
+    --color-highlight: #7289da;
+    --color-hover: #ffffff2a;
+    --color-scrollbar-bg: #2c2f33;
+    --color-scrollbar-thumb: #7289da;
 }
 
 /* Global Styles */
@@ -25,8 +27,8 @@
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    background-color: var(--color-bg);
+    color: var(--color-text);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
     padding: 20px;
@@ -35,15 +37,15 @@ body {
     align-items: center;
     height: 100vh;
     font-size: 16px;
-    transition: background-color 0.3s ease; /* Smooth transition for background color */
+    transition: background-color 0.3s ease;
 }
 
 /* Container Styles */
 .container {
-    background-color: var(--container-bg-color);
+    background-color: var(--color-container-bg);
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Enhanced shadow for depth */
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
     max-width: 90%;
     width: 800px;
     display: flex;
@@ -51,67 +53,103 @@ body {
     align-items: center;
     position: relative;
     overflow: hidden;
+    min-height: 400px;
+    max-height: 90vh;
 }
 
 /* Header Styles */
 h1 {
-    color: var(--header-color);
+    color: var(--color-primary);
     margin-bottom: 20px;
     cursor: pointer;
-    transition: color 0.3s ease; /* Smooth color transition */
+    transition: color 0.3s ease;
+    font-size: 2em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 h1:hover {
-    color: #5f73a5; /* Darker shade on hover */
+    color: #5f73a5;
 }
 
 /* Search Bar Styles */
 .search-bar {
-    display: none; /* Initially hidden */
+    display: none;
     align-items: center;
     width: 80%;
     margin-bottom: 10px;
 }
 
 .search-bar.visible {
-    display: flex; /* Show when visible */
+    display: flex;
 }
 
 input[type="text"] {
     width: 100%;
-    padding: 12px 10px;
-    border-radius: 4px;
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    padding: 12px 14px;
+    border-radius: 6px;
+    background-color: var(--color-bg);
+    color: var(--color-text);
     transition: border-color 0.3s, box-shadow 0.3s;
     border: none;
     min-height: 40px;
+    font-size: 1em;
 }
 
 input[type="text"]:focus {
     outline: none;
-    border-color: var(--highlight-color);
-    /* box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.5); */
-    box-shadow: 0 0 10px var(--highlight-color);
-    border: 1px solid var(--header-color);
+    border-color: var(--color-highlight);
+    box-shadow: 0 0 10px var(--color-highlight);
+    border: 1px solid var(--color-primary);
 }
 
 /* Button Styles */
-.add-button {
-    padding: 12px 18px;
+.add-button, .sample-button {
+    padding: 12px 20px;
     border: none;
-    border-radius: 4px;
-    background-color: var(--header-color);
-    color: var(--text-color);
+    border-radius: 6px;
+    background-color: var(--color-primary);
+    color: var(--color-text);
     cursor: pointer;
-    font-size: 20px;
+    font-size: 1.25em;
     margin: 10px;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Added transition for transform */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: block;
 }
 
-.add-button:hover {
-    background-color: #5f73a5; /* Darker shade for hover */
-    transform: translateY(-2px); /* Slight lift effect on hover */
+.add-button:hover, .sample-button:hover {
+    background-color: #5f73a5;
+    transform: translateY(-2px);
+}
+
+.sample-button {
+    background-color: var(--color-secondary);
+    color: var(--color-bg);
+}
+
+.sample-button:hover {
+    background-color: #7f8a99;
+}
+
+/* Mobile Add File Button */
+.mobile-add-button {
+    display: none;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 1.5em;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.mobile-add-button:hover {
+    background-color: #5f73a5;
+    transform: translateY(-2px);
 }
 
 /* Output Table Styles */
@@ -119,39 +157,46 @@ input[type="text"]:focus {
     overflow: auto;
     max-height: 70vh;
     width: 100%;
+    min-height: 100px;
+    position: relative;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
 }
 
 th, td {
     padding: 12px;
     border: 1px solid #444;
+    font-size: 1em;
 }
 
 th {
-    background-color: var(--table-header-color);
-    color: var(--bg-color);
+    background-color: var(--color-secondary);
+    color: var(--color-bg);
 }
 
 td {
-    background-color: var(--table-odd-row-color);
-    color: var(--text-color);
+    background-color: var(--color-row-odd);
+    color: var(--color-text);
 }
 
 tr:nth-child(even) td {
-    background-color: var(--table-even-row-color);
+    background-color: var(--color-row-even);
 }
 
 .non-empty:hover {
-    background-color: var(--hover-color);
+    background-color: var(--color-hover);
 }
 
 .highlight {
-    background-color: var(--highlight-color) !important;
+    background-color: var(--color-highlight) !important;
 }
 
 /* Toast Notification Styles */
@@ -159,108 +204,252 @@ tr:nth-child(even) td {
     position: fixed;
     bottom: 20px;
     left: 50%;
-    transform: translate(-50%, 0); /* Center the toast */
-    background-color: var(--bg-color);
-    color: var(--text-color);
+    transform: translate(-50%, 0);
+    background-color: var(--color-bg);
+    color: var(--color-text);
     padding: 15px 20px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     opacity: 0;
-    transition: opacity 0.5s ease, transform 0.3s ease; /* Smooth transition */
+    transition: opacity 0.5s ease, transform 0.3s ease;
     z-index: 1000;
     max-width: 300px;
-    width: auto; /* Allow width to adjust based on content */
+    width: auto;
+    font-size: 1em;
 }
 
 .toast.success {
-    background-color: var(--toast-success-bg);
+    background-color: var(--color-toast-success);
 }
 
 .toast.error {
-    background-color: var(--toast-error-bg);
+    background-color: var(--color-toast-error);
 }
 
 .toast.show {
     opacity: 1;
-    transform: translate(-50%, -20px); /* Move up slightly when shown */
+    transform: translate(-50%, -20px);
 }
 
 /* Resize Handle Styles */
 .resize-handle {
-    width: 10px;
-    height: 10px;
-    background-color: var(--header-color);
+    width: 12px;
+    height: 12px;
+    background-color: var(--color-primary);
     cursor: nwse-resize;
     position: absolute;
     bottom: 0;
     right: 0;
     z-index: 10;
-    border-radius: 10%;
-    transition: background-color 0.3s ease; /* Added transition for hover effect */
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
 }
 
 .resize-handle:hover {
-    background-color: #5f73a5; /* Change color on hover */
+    background-color: #5f73a5;
 }
 
 /* Last Clicked Cell Highlighting */
 .last-clicked {
-    /* box-shadow: inset 0 0 0 2px var(--highlight-color); */
-    /* outline: 2px dashed var(--highlight-color); */
-    outline: 2px dotted var(--highlight-color);
-    box-shadow: 0 0 10px var(--highlight-color);
-    /* background: var(--table-odd-row-color); */
+    outline: 2px dotted var(--color-highlight);
+    box-shadow: 0 0 10px var(--color-highlight);
+}
+
+/* Drag and Drop Instructions */
+.drag-drop-instructions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    padding: 12px 14px;
+    border-radius: 6px;
+    background-color: var(--color-bg);
+    color: var(--color-secondary);
+    font-size: 0.9em;
+    margin-top: 10px;
+    border-style: groove;
+    border-color: var(--color-highlight);
+    transition: background-color 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+}
+
+.drag-drop-instructions.drag-over {
+    background-color: #3a3d42;
+    border-color: #5f73a5;
+    transform: scale(1.05);
+    animation: pulse 1s infinite;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(114, 137, 218, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 10px 20px rgba(114, 137, 218, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(114, 137, 218, 0);
+    }
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-scrollbar-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--color-scrollbar-thumb);
+    border-radius: 6px;
+    border: 3px solid var(--color-scrollbar-bg);
 }
 
 /* Media Queries for Responsiveness */
-@media (max-width: 800px) {
-    body {
-        padding: 10px; /* Reduced padding on smaller screens */
-    }
-
+@media (max-width: 1200px) {
     .container {
-        width: 100%; /* Make container full width */
-        padding: 10px; /* Add some padding */
+        width: max-content;
     }
 
     h1 {
-        font-size: 1.5em; /* Slightly smaller heading */
+        font-size: 1.75em;
     }
 
     input[type="text"], .add-button {
-        width: 100%; /* Ensure buttons and inputs are full width */
-        font-size: 16px; /* Adjust font size for readability */
+        width: 100%;
+        font-size: 1em;
+    }
+
+    .add-button {
+        width: fit-content;
+        font-size: 1em;
     }
 
     table {
-        font-size: 14px; /* Adjust font size in the table */
+        font-size: 0.9em;
     }
 
     th, td {
-        padding: 8px; /* Adjust padding for smaller screens */
+        padding: 10px;
+    }
+}
+
+@media (max-width: 800px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    input[type="text"], .add-button {
+        width: 100%;
+        font-size: 0.9em;
+    }
+
+    .add-button {
+        width: fit-content;
+        font-size: 0.9em;
+    }
+
+    table {
+        font-size: 0.8em;
+    }
+
+    th, td {
+        padding: 8px;
     }
 }
 
 @media (max-width: 500px) {
-    /* Further adjustments for very small screens */
-    h1 {
-        font-size: 1.2em; /* Smaller heading on very small screens */
+    body {
+        padding: 5px;
+        height: 100%;
+        overflow-y: auto;
     }
 
     .container {
-        padding: 5px; /* Less padding */
+        margin-top: 30%;
+        padding: 15px;
+        width: 100%;
+        min-height: 500px;
+        border-radius: 8px;
+        box-shadow: none;
+        margin-bottom: 20px;
     }
 
-    input[type="text"], .add-button {
-        padding: 10px; /* Adjust padding for smaller inputs */
-        font-size: 14px; /* Smaller font size */
+    h1 {
+        font-size: 1.5em;
+        text-align: center;
+    }
+
+    input[type="text"] {
+        padding: 8px 10px;
+        font-size: 0.85em;
+        border-radius: 5px;
     }
 
     table {
-        font-size: 12px; /* Smaller font size in the table */
+        font-size: 0.7em;
+        border-spacing: 0;
+        border-collapse: collapse;
     }
 
     th, td {
-        padding: 6px; /* Less padding in the table */
+        padding: 6px 8px;
+        word-wrap: break-word;
+    }
+
+    .mobile-add-button {
+        display: flex;
+        width: 56px;
+        height: 56px;
+        background-color: var(--color-primary);
+        border-radius: 50%;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        justify-content: center;
+        align-items: center;
+        font-size: 1.5em;
+        transition: transform 0.2s ease;
+    }
+
+    .mobile-add-button:hover {
+        transform: translateY(-3px);
+    }
+
+    .toast {
+        max-width: 85%;
+        font-size: 0.85em;
+        padding: 8px 12px;
+    }
+
+    .drag-drop-instructions {
+        display: none;
+    }
+
+    #output {
+        max-height: calc(100vh - 130px);
+        font-size: 0.75em;
+    }
+
+    #fileInput {
+        height: 40px;
+    }
+
+    .resize-handle {
+        width: 10px;
+        height: 10px;
     }
 }
+
