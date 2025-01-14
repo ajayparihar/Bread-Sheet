@@ -147,6 +147,7 @@ function init() {
     function reduceDragDropArea() {
         dragDropInstructions.style.padding = '5px';
         dragDropInstructions.style.fontSize = '0.8em';
+        dragDropInstructions.classList.add('shrunken'); // Add a specific class to handle the visual reduction without affecting animation.
     }
 
     // Enable resizing functionality
