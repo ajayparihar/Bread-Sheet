@@ -1,6 +1,6 @@
 /* Bread Sheet - Main Stylesheet */
 /* Author: Ajay Singh */
-/* Version: 1.1 */
+/* Version: 1.2 */
 /* Date: 04-06-2024 */
 /* Description: Styles for Bread Sheet application, including container, table, and toast notifications. */
 
@@ -112,13 +112,18 @@ input[type="text"]:focus {
     cursor: pointer;
     font-size: 1.25em;
     margin: 10px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease, scale 0.3s ease;
     display: block;
 }
 
 .add-button:hover, .sample-button:hover {
     background-color: #5f73a5;
     transform: translateY(-2px);
+}
+
+.add-button:focus, .sample-button:focus {
+    outline: 2px solid var(--color-highlight);
+    box-shadow: 0 0 8px var(--color-highlight);
 }
 
 .sample-button {
@@ -452,4 +457,3 @@ tr:nth-child(even) td {
         height: 10px;
     }
 }
-
