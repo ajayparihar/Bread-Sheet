@@ -49,7 +49,7 @@ function init() {
 
             if (!isValidFileType(extension)) {
                 fileInput.value = '';
-                return showAlert('Unsupported file type. Please upload an Excel or CSV file.', 'error');
+                return showAlert('Unsupported file type. Please upload an Excel, CSV, or TXT file.', 'error');
             }
 
             reader.onerror = () => {
@@ -76,7 +76,7 @@ function init() {
         const reader = new FileReader();
         const extension = file.name.split('.').pop().toLowerCase();
 
-        if (!isValidFileType(extension)) return showAlert('Unsupported file type. Please upload an Excel or CSV file.', 'error');
+        if (!isValidFileType(extension)) return showAlert('Unsupported file type. Please upload an Excel, CSV, or TXT file.', 'error');
 
         reader.onload = (e) => loadData(e.target.result, extension);
         const readMethod = ['xlsx', 'xls'].includes(extension) ? 'readAsArrayBuffer' : 'readAsText';
@@ -103,9 +103,20 @@ function init() {
     // Load data from the uploaded file
     function loadData(rawData, extension) {
         try {
-            const workbook = extension === 'xlsx' || extension === 'xls' 
-                ? XLSX.read(new Uint8Array(rawData), { type: 'array' })
-                : XLSX.read(rawData, { type: 'string' });
+            let workbook;
+
+            // Handle different file types
+            if (extension === 'csv') {
+                workbook = XLSX.read(rawData, { type: 'string', raw: true });
+            } else if (extension === 'txt') {
+                workbook = XLSX.read(rawData, { type: 'string', raw: true });
+            } else {
+                workbook = ['xlsx', 'xls'].includes(extension) ? XLSX.read(new Uint8Array(rawData), { type: 'array' }) : null;
+            }
+
+            if (!workbook) {
+                return showAlert('Unsupported file format or error parsing file.', 'error');
+            }
 
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
             data = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
