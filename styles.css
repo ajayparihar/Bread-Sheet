@@ -7,413 +7,424 @@
 
 /* Define CSS Variables for Theme Colors */
 :root {
-    --color-bg: #232529;
-    --color-container-bg: #2c2f33;
-    --color-text: #ffffff;
-    --color-primary: #7289da;
-    --color-secondary: #99aab5;
-    --color-row-even: #2c2f33;
-    --color-row-odd: #23272a;
-    --color-toast-success: #7289da;
-    --color-toast-error: #ff0000;
-    --color-highlight: #7289da;
-    --color-hover: #ffffff2a;
-    --color-scrollbar-bg: #2c2f33;
-    --color-scrollbar-thumb: #7289da;
+  --color-bg: #232529;
+  --color-container-bg: #2c2f33;
+  --color-text: #ffffff;
+  --color-primary: #7289da;
+  --color-secondary: #99aab5;
+  --color-row-even: #2c2f33;
+  --color-row-odd: #23272a;
+  --color-toast-success: #7289da;
+  --color-toast-error: #ff0000;
+  --color-highlight: #7289da;
+  --color-hover: #ffffff2a;
+  --color-scrollbar-bg: #2c2f33;
+  --color-scrollbar-thumb: #7289da;
 }
 
 /* Global Styles */
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
 }
 
 /* Container Styles */
 .container {
-    background-color: var(--color-container-bg);
-    padding: 2rem;
-    border-radius: 1.25rem;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-    max-width: 90%;
-    width: 50rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-    min-height: 25rem;
-    max-height: 90vh;
+  background-color: var(--color-container-bg);
+  padding: 2rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  max-width: 90%;
+  width: 50rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  min-height: 25rem;
+  max-height: 90vh;
 }
 
 /* Header Styles */
 h1 {
-    color: var(--color-primary);
-    margin-bottom: 1.5rem;
-    cursor: pointer;
-    transition: color 0.3s ease;
-    font-size: 2rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  color: var(--color-primary);
+  margin-bottom: 1.5rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  font-size: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 h1:hover {
-    color: #5f73a5;
+  color: #5f73a5;
 }
 
 /* Search Bar Styles */
 .search-bar {
-    display: none;
-    align-items: center;
-    width: 80%;
-    margin-bottom: 1rem;
+  display: none;
+  align-items: center;
+  width: 80%;
+  margin-bottom: 1rem;
 }
 
 .search-bar.visible {
-    display: flex;
+  display: flex;
 }
 
 input[type="text"] {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border-radius: 0.375rem;
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    border: none;
-    min-height: 2.5rem;
-    font-size: 1rem;
-    transition: border-color 0.3s, box-shadow 0.3s;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  border: none;
+  min-height: 2.5rem;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-input[type="text"]:focus, input[type="text"]:focus-visible {
-    outline: none;
-    border-color: var(--color-highlight);
-    box-shadow: 0 0 10px var(--color-highlight);
-    border: 1px solid var(--color-primary);
+input[type="text"]:focus,
+input[type="text"]:focus-visible {
+  outline: none;
+  border-color: var(--color-highlight);
+  box-shadow: 0 0 10px var(--color-highlight);
+  border: 1px solid var(--color-primary);
 }
 
 /* Button Styles */
-.add-button, .sample-button {
-    padding: 0.75rem 1.25rem;
-    border: none;
-    border-radius: 0.375rem;
-    background-color: var(--color-primary);
-    color: var(--color-text);
-    cursor: pointer;
-    font-size: 1.25rem;
-    margin: 1rem;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    display: block;
+.add-button,
+.sample-button {
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 0.375rem;
+  background-color: var(--color-primary);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 1.25rem;
+  margin: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: block;
 }
 
-.add-button:hover, .sample-button:hover {
-    background-color: #5f73a5;
-    transform: translateY(-2px);
+.add-button:hover,
+.sample-button:hover {
+  background-color: #5f73a5;
+  transform: translateY(-2px);
 }
 
-.add-button:focus-visible, .sample-button:focus-visible {
-    outline: 2px solid var(--color-highlight);
-    box-shadow: 0 0 8px var(--color-highlight);
+.add-button:focus-visible,
+.sample-button:focus-visible {
+  outline: 2px solid var(--color-highlight);
+  box-shadow: 0 0 8px var(--color-highlight);
 }
 
 .sample-button {
-    background-color: var(--color-secondary);
-    color: var(--color-bg);
+  background-color: var(--color-secondary);
+  color: var(--color-bg);
 }
 
 .sample-button:hover {
-    background-color: #7f8a99;
+  background-color: #7f8a99;
 }
 
 /* Mobile Add File Button */
 .mobile-add-button {
-    display: none;
-    padding: 0.75rem 1.25rem;
-    border: none;
-    border-radius: 50%;
-    background-color: var(--color-primary);
-    color: var(--color-text);
-    cursor: pointer;
-    font-size: 1.5rem;
-    position: fixed;
-    bottom: 1.25rem;
-    right: 1.25rem;
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-    transition: background-color 0.3s ease, transform 0.2s ease;
+  display: none;
+  padding: 0.75rem 1.25rem;
+  border: none;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 1.5rem;
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .mobile-add-button:hover {
-    background-color: #5f73a5;
-    transform: translateY(-2px);
+  background-color: #5f73a5;
+  transform: translateY(-2px);
 }
 
 /* Output Table Styles */
 #output {
-    overflow: auto;
-    max-height: 70vh;
-    width: 100%;
-    min-height: 100px;
-    position: relative;
-    scrollbar-width: thin;
-    -webkit-overflow-scrolling: touch;
+  overflow: auto;
+  max-height: 70vh;
+  width: 100%;
+  min-height: 100px;
+  position: relative;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 2rem;
-    border-radius: 0.5rem;
-    overflow: hidden;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 2rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
-th, td {
-    padding: 1rem;
-    border: 1px solid #444;
-    font-size: 1rem;
+th,
+td {
+  padding: 1rem;
+  border: 1px solid #444;
+  font-size: 1rem;
 }
 
 th {
-    background-color: var(--color-secondary);
-    color: var(--color-bg);
+  background-color: var(--color-secondary);
+  color: var(--color-bg);
 }
 
 td {
-    background-color: var(--color-row-odd);
-    color: var(--color-text);
+  background-color: var(--color-row-odd);
+  color: var(--color-text);
 }
 
 tr:nth-child(even) td {
-    background-color: var(--color-row-even);
+  background-color: var(--color-row-even);
 }
 
 .non-empty:hover {
-    background-color: var(--color-hover);
+  background-color: var(--color-hover);
 }
 
 .highlight {
-    background-color: var(--color-highlight) !important;
+  background-color: var(--color-highlight) !important;
 }
 
 /* Toast Notification Styles */
 .toast {
-    position: fixed;
-    bottom: 1.25rem;
-    left: 50%;
-    transform: translate(-50%, 0);
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    padding: 1rem 1.25rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    transition: opacity 0.5s ease, transform 0.3s ease;
-    z-index: 1000;
-    max-width: 300px;
-    width: auto;
-    font-size: 1rem;
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translate(-50%, 0);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.3s ease;
+  z-index: 1000;
+  max-width: 300px;
+  width: auto;
+  font-size: 1rem;
 }
 
 .toast.success {
-    background-color: var(--color-toast-success);
+  background-color: var(--color-toast-success);
 }
 
 .toast.error {
-    background-color: var(--color-toast-error);
+  background-color: var(--color-toast-error);
 }
 
 .toast.show {
-    opacity: 1;
-    transform: translate(-50%, -20px);
+  opacity: 1;
+  transform: translate(-50%, -20px);
 }
 
 /* Resize Handle Styles */
 .resize-handle {
-    width: 1rem;
-    height: 1rem;
-    background-color: var(--color-primary);
-    cursor: nwse-resize;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    z-index: 10;
-    border-radius: 50%;
-    transition: background-color 0.3s ease;
+  width: 1rem;
+  height: 1rem;
+  background-color: var(--color-primary);
+  cursor: nwse-resize;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 10;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
 }
 
 .resize-handle:hover {
-    background-color: #5f73a5;
+  background-color: #5f73a5;
 }
 
 /* Last Clicked Cell Highlighting */
 .last-clicked {
-    outline: 2px dotted var(--color-highlight);
-    box-shadow: 0 0 10px var(--color-highlight);
+  outline: 2px dotted var(--color-highlight);
+  box-shadow: 0 0 10px var(--color-highlight);
 }
 
 /* Drag and Drop Instructions */
 .drag-drop-instructions {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: fit-content;
-    padding: 1rem 1.25rem;
-    border-radius: 0.375rem;
-    background-color: var(--color-bg);
-    color: var(--color-secondary);
-    font-size: 0.9rem;
-    margin-top: 1rem;
-    border-style: groove;
-    border-color: var(--color-highlight);
-    transition: background-color 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 1rem 1.25rem;
+  border-radius: 0.375rem;
+  background-color: var(--color-bg);
+  color: var(--color-secondary);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  border-style: groove;
+  border-color: var(--color-highlight);
+  transition: background-color 0.3s, border-color 0.3s, transform 0.3s,
+    box-shadow 0.3s;
 }
 
 .drag-drop-instructions:hover {
-    background-color: #3a3d42;
-    cursor: pointer;
+  background-color: #3a3d42;
+  cursor: pointer;
 }
 
 /* When the file is dropped, the drag-and-drop area could retain the hover effects */
 .drag-drop-instructions.shrunken {
-    padding: 5px;
-    font-size: 0.8em;
-    transition: padding 0.3s ease, font-size 0.3s ease;
+  padding: 5px;
+  font-size: 0.8em;
+  transition: padding 0.3s ease, font-size 0.3s ease;
 }
 
 /* Ensure the drag-over state animation still works even when it's reduced */
 .drag-drop-instructions.drag-over {
-    background-color: #3a3d42;
-    border-color: #5f73a5;
-    transform: scale(1.10);
-    animation: pulse 1s infinite;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  background-color: #3a3d42;
+  border-color: #5f73a5;
+  transform: scale(1.1);
+  animation: pulse 1s infinite;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(114, 137, 218, 0.7);
-    }
-    70% {
-        box-shadow: 0 0 10px 20px rgba(114, 137, 218, 0);
-    }
-    100% {
-        box-shadow: 0 0 0 0 rgba(114, 137, 218, 0);
-    }
+  0% {
+    box-shadow: 0 0 0 0 rgba(114, 137, 218, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 10px 20px rgba(114, 137, 218, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(114, 137, 218, 0);
+  }
 }
 
 /* Custom Scrollbar Styles */
 ::-webkit-scrollbar {
-    width: 1rem;
+  width: 1rem;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--color-scrollbar-bg);
+  background: var(--color-scrollbar-bg);
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: var(--color-scrollbar-thumb);
-    border-radius: 0.375rem;
-    border: 0.25rem solid var(--color-scrollbar-bg);
+  background-color: var(--color-scrollbar-thumb);
+  border-radius: 0.375rem;
+  border: 0.25rem solid var(--color-scrollbar-bg);
 }
 
 /* Media Queries for Responsiveness */
 @media (max-width: 1200px) {
-    .container {
-        width: 80%;
-    }
+  .container {
+    width: 80%;
+  }
 
-    h1 {
-        font-size: 1.75rem;
-    }
+  h1 {
+    font-size: 1.75rem;
+  }
 
-    input[type="text"], .add-button {
-        width: 100%;
-    }
+  input[type="text"],
+  .add-button {
+    width: 100%;
+  }
 
-    .add-button {
-        width: fit-content;
-    }
+  .add-button {
+    width: fit-content;
+  }
 
-    table {
-        font-size: 0.9rem;
-    }
+  table {
+    font-size: 0.9rem;
+  }
 
-    th, td {
-        padding: 0.75rem;
-    }
+  th,
+  td {
+    padding: 0.75rem;
+  }
 }
 
 @media (max-width: 800px) {
-    body {
-        padding: 1rem;
-    }
+  body {
+    padding: 1rem;
+  }
 
-    .container {
-        width: 100%;
-        padding: 1rem;
-    }
+  .container {
+    width: 100%;
+    padding: 1rem;
+  }
 
-    h1 {
-        font-size: 1.5rem;
-    }
+  h1 {
+    font-size: 1.5rem;
+  }
 
-    input[type="text"], .add-button {
-        width: 100%;
-        font-size: 1rem;
-    }
+  input[type="text"],
+  .add-button {
+    width: 100%;
+    font-size: 1rem;
+  }
 
-    .add-button {
-        width: fit-content;
-    }
+  .add-button {
+    width: fit-content;
+  }
 
-    table {
-        font-size: 0.85rem;
-    }
+  table {
+    font-size: 0.85rem;
+  }
 
-    th, td {
-        padding: 0.5rem 0.75rem;
-    }
+  th,
+  td {
+    padding: 0.5rem 0.75rem;
+  }
 }
 
 @media (max-width: 500px) {
-    body {
-        padding: 0.5rem;
-    }
+  body {
+    padding: 0.5rem;
+  }
 
-    .container {
-        margin-top: 30%;
-        padding: 1.25rem;
-        width: 100%;
-        min-height: 25rem;
-    }
+  .container {
+    margin-top: 30%;
+    padding: 1.25rem;
+    width: 100%;
+    min-height: 25rem;
+  }
 
-    h1 {
-        font-size: 1.5rem;
-    }
+  h1 {
+    font-size: 1.5rem;
+  }
 
-    table {
-        font-size: 0.75rem;
-    }
+  table {
+    font-size: 0.75rem;
+  }
 
-    th, td {
-        padding: 0.5rem;
-    }
+  th,
+  td {
+    padding: 0.5rem;
+  }
 
-    .mobile-add-button {
-        display: block;
-    }
+  .mobile-add-button {
+    display: block;
+  }
 
-    .drag-drop-instructions {
-        display: none;
-    }
+  .drag-drop-instructions {
+    display: none;
+  }
 }
