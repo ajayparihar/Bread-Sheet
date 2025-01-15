@@ -441,7 +441,7 @@ tr:nth-child(even) td {
     right: 1.5rem;
     text-align: right;
     padding:5%;
-    opacity: 0.8;
+    opacity: 0.6;
   }
   
   @media (max-width: 500px) {
