@@ -265,7 +265,7 @@ function init() {
 
   // Open a new page
   function openNewPage() {
-    window.open("https://ajayparihar.github.io/Bread-Sheet", "_blank");
+    window.open("#", "_blank");
   }
 
   // Display data in a table
