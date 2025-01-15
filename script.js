@@ -38,7 +38,6 @@ function init() {
   document.addEventListener("dragover", handleDragOver);
   document.addEventListener("drop", handleFileDrop);
   document.addEventListener("dragenter", handleDragEnter);
-  document.addEventListener("dragleave", handleDragLeave);
 
   // Initially hide the search bar
   searchContainer.classList.remove("visible");
@@ -108,12 +107,6 @@ function init() {
   function handleDragEnter(event) {
     event.preventDefault();
     dragDropInstructions.classList.add("drag-over");
-  }
-
-  // Remove highlight from drag-and-drop area on drag leave
-  function handleDragLeave(event) {
-    event.preventDefault();
-    dragDropInstructions.classList.remove("drag-over");
   }
 
   // Load data from the uploaded file
