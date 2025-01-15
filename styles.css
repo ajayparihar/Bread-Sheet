@@ -400,14 +400,17 @@ tr:nth-child(even) td {
   }
 
   .container {
-    margin-top: 30%;
-    padding: 1.25rem;
+    margin-top: 10%;
+    padding: 1.5rem;
     width: 100%;
-    min-height: 25rem;
+    min-height: 30rem;
+    padding-bottom: 4rem; /* Added padding to prevent button overlap */
   }
 
   h1 {
-    font-size: 1.5rem;
+    font-size: 2rem;
+    word-break: break-word; /* Ensures text wraps on small screens */
+    text-align: center; /* Centers the header for better visibility */
   }
 
   table {
@@ -427,3 +430,22 @@ tr:nth-child(even) td {
     display: none;
   }
 }
+
+/* Hint Message Styles for Mobile */
+.mobile-hint {
+    display: none;
+    font-size: 0.85rem;
+    color: var(--color-secondary);
+    position:static;
+    bottom: 5rem;
+    right: 1.5rem;
+    text-align: right;
+    padding:5%;
+    opacity: 0.8;
+  }
+  
+  @media (max-width: 500px) {
+    .mobile-hint {
+      display: block;
+    }
+  }

@@ -8,31 +8,38 @@
 <html lang="en">
 
 <head>
+    <!-- Meta Tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="description"
-        content="Bread Sheet is a web-based copy-paster application for efficient management of spreadsheet data.">
+    <meta name="description" content="Bread Sheet is a web-based copy-paster application for efficient management of spreadsheet data.">
     <meta name="theme-color" content="#232529">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
+
+    <!-- Title -->
     <title>Bread Sheet</title>
 
-    <!-- Favicon and External Resources -->
+    <!-- Favicon and Icons -->
     <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
     <link rel="manifest" href="favicon_io/site.webmanifest">
+
+    <!-- Stylesheet -->
     <link rel="stylesheet" href="styles.css">
+
+    <!-- External JS Library -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" defer></script>
 </head>
 
 <body>
+    <!-- Main Container -->
     <main class="container">
+        <!-- Project Title -->
         <h1 id="projectTitle">Bread Sheet</h1>
 
         <!-- Mobile Add File Button -->
-        <button class="mobile-add-button" aria-label="Add File"
-            onclick="document.getElementById('fileInput').click();">+</button>
+        <button class="mobile-add-button" aria-label="Add File" onclick="document.getElementById('fileInput').click();">+</button>
 
         <!-- Search Bar -->
         <div id="searchContainer" class="search-bar">
@@ -42,15 +49,21 @@
         <!-- Data Output Section -->
         <div id="output"></div>
 
-        <!-- File Upload Button -->
+        <!-- Hint Section (Mobile) -->
+        <div class="mobile-hint">Click on the (+) button to add files</div>
+
+        <!-- Hidden File Upload Input -->
         <input type="file" id="fileInput" accept=".xlsx, .xls, .csv, .txt" style="display: none;">
 
         <!-- Drag-and-Drop Instructions -->
-        <p class="drag-drop-instructions">Click on the <button class="add-button" aria-label="Add File"
-                onclick="document.getElementById('fileInput').click();">+</button> or Drag and drop file here</p>
+        <p class="drag-drop-instructions">
+            Click on the 
+            <button class="add-button" aria-label="Add File" onclick="document.getElementById('fileInput').click();">+</button> 
+            or drag and drop a file here
+        </p>
     </main>
 
-    <!-- Add loading indicator -->
+    <!-- Loading Indicator -->
     <div id="loadingIndicator" class="loading-indicator" style="display: none;">
         Loading...
     </div>
