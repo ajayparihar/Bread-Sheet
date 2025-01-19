@@ -179,6 +179,8 @@ table {
   margin-top: 2rem;
   border-radius: 0.5rem;
   overflow: hidden;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 th,
@@ -433,19 +435,19 @@ tr:nth-child(even) td {
 
 /* Hint Message Styles for Mobile */
 .mobile-hint {
-    display: none;
-    font-size: 0.85rem;
-    color: var(--color-secondary);
-    position:static;
-    bottom: 5rem;
-    right: 1.5rem;
-    text-align: right;
-    padding:5%;
-    opacity: 0.6;
+  display: none;
+  font-size: 0.85rem;
+  color: var(--color-secondary);
+  position: static;
+  bottom: 5rem;
+  right: 1.5rem;
+  text-align: right;
+  padding: 5%;
+  opacity: 0.6;
+}
+
+@media (max-width: 500px) {
+  .mobile-hint {
+    display: block;
   }
-  
-  @media (max-width: 500px) {
-    .mobile-hint {
-      display: block;
-    }
-  }
+}
