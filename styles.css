@@ -272,22 +272,25 @@ tr:nth-child(even) td {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: fit-content;
-  padding: 1rem 1.25rem;
+  width: 45vw;
+  padding: 2rem 2rem;
   border-radius: 0.375rem;
   background-color: var(--color-bg);
   color: var(--color-secondary);
   font-size: 0.9rem;
   margin-top: 1rem;
-  border-style: groove;
+  border-style: dashed;
   border-color: var(--color-highlight);
+  text-align: center;
   transition: background-color 0.3s, border-color 0.3s, transform 0.3s,
     box-shadow 0.3s;
+  transform: translateY(0);
 }
 
 .drag-drop-instructions:hover {
   background-color: #3a3d42;
   cursor: pointer;
+  transform: translateY(-5px);
 }
 
 /* When the file is dropped, the drag-and-drop area could retain the hover effects */

@@ -13,7 +13,6 @@ function init() {
   const searchContainer = document.querySelector(".search-bar");
   const searchInput = document.getElementById("searchInput");
   const container = document.querySelector(".container");
-  const addFileButton = document.querySelector(".add-button");
   const dragDropInstructions = document.querySelector(
     ".drag-drop-instructions"
   );
@@ -26,7 +25,6 @@ function init() {
   // Event Listeners
   fileInput.addEventListener("change", handleFileUpload);
   searchInput.addEventListener("input", debounce(handleSearch, 300));
-  addFileButton.addEventListener("click", fileInput.click());
   document
     .getElementById("projectTitle")
     .addEventListener("click", refreshPage);
@@ -77,6 +75,7 @@ function init() {
 
   // Handle file drop via drag-and-drop
   function handleFileDrop(event) {
+    console.log("File dropped.");
     event.preventDefault();
     dragDropInstructions.classList.remove("drag-over");
     const file = event.dataTransfer.files[0];
