@@ -29,4 +29,3 @@ The **Bread Sheet** is a web-based copy-paster application designed for efficien
 - **HTML**: For structuring the user interface.
 - **CSS**: For styling the application and ensuring responsiveness.
 - **JavaScript**: For handling file uploads, data processing, and interactivity using the [SheetJS (XLSX)](https://github.com/SheetJS/sheetjs) library.
-"""
