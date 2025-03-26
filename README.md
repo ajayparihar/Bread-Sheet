@@ -1,39 +1,73 @@
 # Bread Sheet
 
-[**Bread Sheet**](https://ajayparihar.github.io/Bread-Sheet)
+[**Live Application**](https://ajayparihar.github.io/Bread-Sheet)
 
 ## Overview
 
-The **Bread Sheet** is a web-based copy-paster application designed for efficient management of spreadsheet data. Built using HTML, CSS, and JavaScript, it enables users to upload files, view the contents, and easily copy data to the clipboard.
-
-### Supported File Formats
-
-- **Excel Files**: `.xlsx`, `.xls`
-- **CSV Files**: `.csv`
-- **Text Files**: `.txt`
+Bread Sheet is a powerful web-based spreadsheet data manipulation tool designed for efficient data viewing, copying, and exporting. Built with HTML, CSS, and JavaScript, it offers a modern glassomorphic UI with both light and dark themes.
 
 ## Features
 
-- **File Upload**: Easily upload spreadsheet files from your local device.
-- **Data Display**: View the contents of uploaded spreadsheets in a user-friendly table format.
-- **Copy to Clipboard**: Click on any data cell to copy its content directly to the clipboard.
-- **Search Functionality**: Search through the displayed data with highlighted results for easy identification.
-- **Resizable Container**: Adjust the display area according to your preferences.
+### File Handling
+- **Multiple Format Support**: Excel (`.xlsx`, `.xls`), CSV (`.csv`), and plain text (`.txt`) files
+- **Drag & Drop Interface**: Easy file uploading through intuitive drag and drop
+- **Multi-Sheet Support**: Navigate between different sheets in Excel workbooks
+- **Refresh Data**: Update data from the same file without re-uploading
+
+### Data Manipulation
+- **One-Click Copy**: Instantly copy any cell content to clipboard
+- **Advanced Search**: Find data with options for:
+  - Case sensitivity
+  - Regular expressions
+  - Whole word matching
+  - Column-specific searching
+- **Data Export**: Export data to different formats:
+  - Excel (`.xlsx`)
+  - CSV (`.csv`) 
+  - Text (`.txt`)
+  - HTML (`.html`)
+
+### User Interface
+- **Responsive Design**: Works on desktop and mobile devices
+- **Theme Toggle**: Switch between light and dark themes
+- **Keyboard Navigation**: Move through cells using arrow keys
+- **Keyboard Shortcuts**: Efficiency-enhancing keyboard shortcuts
+- **Resizable Container**: Adjust viewing area to fit your needs
+- **Accessibility Features**: Screen reader support and keyboard navigation
 
 ## Usage
 
-1. **Visit the Application**: Go to the [Bread Sheet](https://ajayparihar.github.io/Bread-Sheet) to access the tool.
-2. **Upload a File**: Click on the "+" button to select and upload a spreadsheet file from your device.
-3. **View Data**: The application will read the file and display its contents in a table format.
-4. **Search for Data**: Use the search bar to find specific data within the table. Matching results will be highlighted.
-5. **Copy Data**: Click on any cell to copy its content to the clipboard. A notification will confirm the action.
-6. **Adjust Container Size**: Resize the container to fit your display preferences.
+1. **Access the Application**: Visit [Bread Sheet](https://ajayparihar.github.io/Bread-Sheet)
+2. **Upload Data**: Either drag and drop a file or click the "+" button
+3. **Navigate Data**: Use mouse or keyboard to move through cells
+4. **Search**: Use the search bar with advanced options for targeted searching
+5. **Copy Data**: Click any cell to copy its content
+6. **Export**: Click the export button to save data in your preferred format
+7. **Change Sheets**: Use the sheet tabs to switch between worksheets in Excel files
+8. **Adjust View**: Resize the container by dragging its edges
 
-## Technologies Used
+## Keyboard Shortcuts
 
-- **HTML**: For structuring the user interface.
-- **CSS**: For styling the application and ensuring responsiveness.
-- **JavaScript**: For handling file uploads, data processing, and interactivity using the [SheetJS (XLSX)](https://github.com/SheetJS/sheetjs) library.
+| Action | Shortcut |
+|--------|----------|
+| Search | Ctrl/⌘ + F |
+| Export | Ctrl/⌘ + E |
+| Refresh | Ctrl/⌘ + R |
+| Cell Navigation | Arrow Keys |
+| Begin Editing | Enter |
+| Copy Cell | Alt + C |
+| View Shortcuts | ? |
+| Toggle Theme | Alt + T |
+
+## Technologies
+
+- **Core**: HTML5, CSS3, JavaScript (ES6+)
+- **Libraries**: [SheetJS (XLSX)](https://github.com/SheetJS/sheetjs) for spreadsheet parsing
+- **Design**: Custom glassomorphic UI with CSS variables for theming
+
+## Version
+
+Current version: v1.2
 
 ## Contributing
 

@@ -1,8 +1,8 @@
 <!-- Bread Sheet - Main HTML File -->
 <!-- Author: Ajay Singh -->
-<!-- Version: 1.1 -->
+<!-- Version: 1.2 -->
 <!-- Date: 04-06-2024 -->
-<!-- Description: HTML structure for the Bread Sheet application, including the main container, file input, and search functionality. -->
+<!-- Description: HTML structure for the Bread Sheet application with improved glassomorphic design -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -15,11 +15,12 @@
     />
     <meta
       name="description"
-      content="Bread Sheet is a web-based copy-paster application for efficient management of spreadsheet data."
+      content="Bread Sheet is a modern web-based spreadsheet data management application with powerful data manipulation capabilities."
     />
-    <meta name="theme-color" content="#232529" />
+    <meta name="theme-color" content="#0c101a" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
     <!-- Title -->
     <title>Bread Sheet</title>
@@ -49,41 +50,107 @@
 
     <!-- External JS Library -->
     <script
-      src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"
+      src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
       defer
     ></script>
   </head>
 
   <body>
+    <!-- Skip to content link for accessibility -->
+    <a href="#output" class="skip-link">Skip to data content</a>
+    
     <!-- Main Container -->
     <main class="container">
-      <!-- Project Title -->
-      <h1 id="projectTitle">Bread Sheet</h1>
+      <!-- Header Section with Project Title and Theme Toggle -->
+      <header class="header-container">
+        <div class="title-container">
+          <h1 id="projectTitle">Bread Sheet</h1>
+          <a href="https://github.com/ajayparihar/Bread-Sheet/tree/release/1.2" class="title-badge" title="View on GitHub" target="_blank" rel="noopener noreferrer">v1.2</a>
+        </div>
+        <!-- Theme Toggle Button -->
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark/light theme">
+          <span aria-hidden="true">🌙</span>
+          <span class="visually-hidden">Toggle Theme</span>
+        </button>
+      </header>
 
-      <!-- Mobile Add File Button -->
-      <button
-        class="mobile-add-button"
-        aria-label="Add File"
-        onclick="document.getElementById('fileInput').click();"
-      >
-        +
-      </button>
+      <!-- Action Buttons Container -->
+      <div id="actionButtons" class="action-buttons" role="toolbar" aria-label="File operations">
+        <!-- Left-aligned buttons -->
+        <div class="left-buttons">
+          <!-- Refresh Button -->
+          <button id="refreshButton" class="action-button refresh-button" disabled title="Refresh data from file" aria-disabled="true">
+            <span class="btn-icon" aria-hidden="true">↻</span>
+            <span class="btn-text">Refresh</span>
+          </button>
+          
+          <!-- Export Button & Dropdown -->
+          <div class="dropdown">
+            <button id="exportButton" class="action-button export-button" disabled aria-haspopup="true" aria-expanded="false" aria-disabled="true">
+              <span class="btn-icon" aria-hidden="true">↑</span>
+              <span class="btn-text">Export</span>
+              <span class="dropdown-arrow" aria-hidden="true">▼</span>
+            </button>
+            <div class="dropdown-menu" role="menu">
+              <button data-format="xlsx" class="dropdown-item" role="menuitem"><span class="format-icon" aria-hidden="true">📊</span>Excel (.xlsx)</button>
+              <button data-format="csv" class="dropdown-item" role="menuitem"><span class="format-icon" aria-hidden="true">📋</span>CSV (.csv)</button>
+              <button data-format="txt" class="dropdown-item" role="menuitem"><span class="format-icon" aria-hidden="true">📝</span>Text (.txt)</button>
+              <button data-format="html" class="dropdown-item" role="menuitem"><span class="format-icon" aria-hidden="true">🌐</span>HTML (.html)</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right-aligned keyboard shortcuts button -->
+        <button id="showKeyboardShortcuts" class="action-button keyboard-shortcuts-button" title="View keyboard shortcuts">
+          <span class="btn-icon" aria-hidden="true">⌨</span>
+          <span class="btn-text">Shortcuts</span>
+        </button>
+      </div>
 
-      <!-- Search Bar -->
-      <div id="searchContainer" class="search-bar">
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search..."
-          aria-label="Search through data"
-        />
+      <!-- Enhanced Search Bar -->
+      <div id="searchContainer" class="search-bar" role="search">
+        <div class="search-input-container">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search..."
+            aria-label="Search through data"
+          />
+          <button id="searchOptionsToggle" class="search-options-toggle" title="Search Options" aria-label="Toggle search options" aria-expanded="false" aria-controls="searchOptionsPanel">
+            <span aria-hidden="true">⚙️</span>
+          </button>
+        </div>
+        
+        <!-- Advanced Search Options Panel -->
+        <div id="searchOptionsPanel" class="search-options-panel" aria-hidden="true">
+          <div class="search-option">
+            <label for="columnSelector">Search in:</label>
+            <select id="columnSelector">
+              <option value="all">All Columns</option>
+              <!-- Column options will be added dynamically -->
+            </select>
+          </div>
+          
+          <div class="search-option checkbox-option">
+            <input type="checkbox" id="caseSensitive" />
+            <label for="caseSensitive">Case Sensitive</label>
+          </div>
+          
+          <div class="search-option checkbox-option">
+            <input type="checkbox" id="regexSearch" />
+            <label for="regexSearch">Regex Search</label>
+          </div>
+          
+          <div class="search-option checkbox-option">
+            <input type="checkbox" id="wholeWord" />
+            <label for="wholeWord">Match Whole Word</label>
+          </div>
+        </div>
       </div>
 
       <!-- Data Output Section -->
-      <div id="output"></div>
-
-      <!-- Hint Section (Mobile) -->
-      <div class="mobile-hint">Click on the (+) button to add files</div>
+      <section id="output" role="region" aria-label="Data table content" tabindex="0"></section>
 
       <!-- Hidden File Upload Input -->
       <input
@@ -91,23 +158,40 @@
         id="fileInput"
         accept=".xlsx, .xls, .csv, .txt"
         style="display: none"
+        aria-label="Upload file"
       />
 
       <!-- Drag-and-Drop Instructions -->
-      <p
+      <div
         class="drag-drop-instructions"
         onclick="document.getElementById('fileInput').click();"
+        tabindex="0"
+        role="button"
+        aria-label="Upload file - click here or drag and drop"
       >
-        📎 Click here or drag and drop Excel, CSV, or text files here (.xlsx,
-        .xls, .csv, .txt)
-      </p>
+        <span class="upload-icon" aria-hidden="true">📎</span>
+        <span class="upload-text">Drop Excel, CSV, or text files here or click to browse</span>
+      </div>
     </main>
 
-    <!-- Loading Indicator -->
-    <div id="loadingIndicator" class="loading-indicator" style="display: none">
-      Loading...
+    <!-- Mobile Add Button -->
+    <button
+      class="mobile-add-button"
+      aria-label="Add File"
+      onclick="document.getElementById('fileInput').click();"
+    >
+      <span aria-hidden="true">+</span>
+    </button>
+
+    <!-- Loading Indicator with improved animation -->
+    <div id="loadingIndicator" class="loading-indicator" style="display: none" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="loading-text">Loading your file...</div>
     </div>
 
+    <!-- Toast container for notifications -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+    
     <!-- Main Script -->
     <script src="script.js"></script>
   </body>
