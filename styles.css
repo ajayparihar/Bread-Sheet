@@ -2126,31 +2126,9 @@ body.select-dropdown-active select option {
 }
 
 /* Random Background Image Styling */
-.random-background-image {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  transition: all 0.3s ease;
-  box-shadow: none;
-  animation: fadeIn 0.5s ease-in-out;
-  display: block;
-  position: relative;
-  z-index: 1;
-  filter: var(--image-filter, none);
-}
 
-body.light-theme .random-background-image {
-  box-shadow: none;
-  --image-filter: brightness(1);
-}
 
-body.dark-theme .random-background-image {
-  --image-filter: brightness(0.95);
-}
-
-/* Add animation for the image loading */
+/* Animation for UI elements */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -2160,29 +2138,4 @@ body.dark-theme .random-background-image {
   }
 }
 
-/* Data Output Section for image display */
-#output.image-display {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 !important;
-  overflow: hidden;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background-color: var(--color-bg);
-  transition: all 0.3s ease;
-}
-
-/* Ensure the container for random images fills the output area */
-#output .image-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s ease;
-  background-color: var(--color-bg);
-}
+/* End of stylesheet */

@@ -64,8 +64,7 @@ function init() {
     keyboardShortcutsButton.style.display = 'none';
   }
 
-  // Show a random image in the output area when no file is loaded
-  displayRandomImage();
+  // No initial content in the output area when no file is loaded
 
   let resizeHandle,
     data = [],
@@ -870,7 +869,7 @@ function init() {
     data = [];
     originalData = [];
     
-    // Don't clear UI elements here, as the displayRandomImage function will handle it
+    // Clear UI elements here as needed
     // We'll just clean up event listeners and other references
     
     // Remove old sheet selector if it exists
@@ -924,7 +923,14 @@ function init() {
     searchInput.value = "";
     
     // Display a random image in the empty state
-    displayRandomImage();
+    // Clear any existing content in the output area
+    const output = document.getElementById("output");
+    output.innerHTML = "";
+    
+    // Make sure drag-drop instructions are visible
+    if (dragDropInstructions) {
+      dragDropInstructions.style.display = "flex";
+    }
     
     // Show drag-drop instructions
     dragDropInstructions.style.display = "block";
@@ -2278,188 +2284,21 @@ function init() {
   });
 
   // Function to display a random image when no file is loaded
-  function displayRandomImage() {
-    const output = document.getElementById("output");
-    
-    // Clear any existing content
-    output.innerHTML = "";
-    
-    // Add image-display class to output
-    output.classList.add("image-display");
-    
-    // First get container dimensions - if container has its display style set properly
-    const containerRect = container.getBoundingClientRect();
-    const outputRect = output.getBoundingClientRect();
-    
-    // Initialize dimensions
-    let imageWidth, imageHeight;
-    
-    // Choose the best dimensions by checking if element rectangles are valid
-    if (outputRect.width > 50 && outputRect.height > 50) {
-      // Use full output dimensions
-      imageWidth = Math.round(outputRect.width);
-      imageHeight = Math.round(outputRect.height);
-      console.log("Using output dimensions:", imageWidth, "x", imageHeight);
-    } else if (containerRect.width > 50 && containerRect.height > 50) {
-      // Use container dimensions with minimal reduction
-      imageWidth = Math.round(containerRect.width * 0.95);
-      imageHeight = Math.round(containerRect.height * 0.8); 
-      console.log("Using container dimensions:", imageWidth, "x", imageHeight);
-    } else {
-      // Final fallback to viewport-based sizing
-      if (window.innerWidth <= 768) {
-        imageWidth = window.innerWidth * 0.9;
-        imageHeight = window.innerHeight * 0.6;
-      } else {
-        imageWidth = window.innerWidth * 0.8;
-        imageHeight = window.innerHeight * 0.7;
-      }
-      console.log("Using viewport dimensions:", imageWidth, "x", imageHeight);
-    }
-    
-    // Round dimensions to nearest 50px for better caching
-    imageWidth = Math.floor(imageWidth / 50) * 50;
-    imageHeight = Math.floor(imageHeight / 50) * 50;
-    
-    // Ensure minimum dimensions
-    imageWidth = Math.max(imageWidth, 300);
-    imageHeight = Math.max(imageHeight, 200);
-    
-    // Create a random image using picsum.photos with grayscale
-    // Use a simple dimension-based URL for better compatibility
-    const randomSeed = Math.floor(Math.random() * 1000);
-    const imageUrl = `https://picsum.photos/seed/${randomSeed}/${imageWidth}/${imageHeight}`;
-    
-    console.log("Loading image from:", imageUrl);
-    
-    // Create image container - centered with flex
-    const imageContainer = document.createElement("div");
-    imageContainer.className = "image-container";
-    imageContainer.style.width = "100%";
-    imageContainer.style.height = "100%";
-    imageContainer.style.display = "flex";
-    imageContainer.style.alignItems = "center";
-    imageContainer.style.justifyContent = "center";
-    imageContainer.style.overflow = "hidden";
-    imageContainer.style.position = "relative";
-    imageContainer.style.backgroundColor = "var(--color-bg)";
-    
-    // Create image element - preserve aspect ratio
-    const imgElement = document.createElement("img");
-    imgElement.src = imageUrl;
-    imgElement.alt = "Random background image";
-    imgElement.classList.add("random-background-image");
-    
-    // Style for natural aspect ratio - don't stretch
-    imgElement.style.maxWidth = "100%";
-    imgElement.style.maxHeight = "100%";
-    imgElement.style.width = "auto";
-    imgElement.style.height = "auto";
-    imgElement.style.objectFit = "contain";
-    imgElement.style.position = "relative"; // Don't use absolute positioning
-    imgElement.style.top = "auto";
-    imgElement.style.left = "auto";
-    
-    // Add resize listener to handle window resize
-    const resizeListener = () => {
-      // Only update if container dimensions change significantly
-      const newOutputRect = output.getBoundingClientRect();
-      if (Math.abs(newOutputRect.width - outputRect.width) > 100 || 
-          Math.abs(newOutputRect.height - outputRect.height) > 100) {
-        // Remove this listener to avoid duplication
-        window.removeEventListener('resize', resizeListener);
-        
-        // Reload the image with new dimensions
-        displayRandomImage();
-      }
-    };
-    
-    // Add the resize listener
-    window.addEventListener('resize', debounce(resizeListener, 250));
-    
-    // Add load event listener to handle when image is fully loaded
-    imgElement.addEventListener('load', () => {
-      console.log('Image loaded successfully:', imageUrl);
-      
-      // Position the drag-drop instructions over the image - at the bottom
-      if (dragDropInstructions) {
-        // Make drag-drop instructions appear above the image
-        dragDropInstructions.style.display = "flex";
-        
-        // If the drag-drop area was shrunk previously, restore its normal size
-        dragDropInstructions.classList.remove("shrunken");
-        
-        // Position at the bottom with margins
-        dragDropInstructions.style.margin = "1rem auto";
-        
-        // Use relative positioning
-        dragDropInstructions.style.position = "relative";
-        dragDropInstructions.style.zIndex = "20";
-        
-        // Remove centering styles
-        dragDropInstructions.style.top = "";
-        dragDropInstructions.style.left = "";
-        dragDropInstructions.style.transform = "";
-        
-        // Ensure proper transparency and attractive styling
-        if (document.body.classList.contains('light-theme')) {
-          dragDropInstructions.style.backgroundColor = "rgba(245, 247, 250, 0.75)";
-        } else {
-          dragDropInstructions.style.backgroundColor = "rgba(35, 39, 47, 0.75)";
-        }
-      }
-    });
-    
-    // Add error handler in case image fails to load
-    imgElement.addEventListener('error', () => {
-      console.error('Failed to load random image:', imageUrl);
-      
-      // Try with a different seed
-      const newSeed = Math.floor(Math.random() * 1000) + 1000;
-      const fallbackUrl = `https://picsum.photos/seed/${newSeed}/800/600`;
-      console.log('Trying fallback URL:', fallbackUrl);
-      imgElement.src = fallbackUrl;
-      
-      // Add one more fallback for the final attempt
-      imgElement.addEventListener('error', () => {
-        console.error('Second attempt failed, using final fallback');
-        // Try the simplest format as last resort
-        imgElement.src = 'https://picsum.photos/800/600';
-      });
-    });
-    
-    // Append image to container
-    imageContainer.appendChild(imgElement);
-    
-    // Append container to output
-    output.appendChild(imageContainer);
-    
-    // Set output area styling to ensure full coverage
-    output.style.padding = "0";
-    output.style.overflow = "hidden";
-    output.style.height = "100%";
-    output.style.position = "relative";
-  }
+
 
   // Helper function to reset output styling for data display
   function resetOutputForDataDisplay(outputElement) {
-    // Remove styling applied by displayRandomImage
+    // Reset basic styling
     outputElement.style.padding = "";
     outputElement.style.overflow = "";
     outputElement.style.height = "";
     outputElement.style.display = "";
-    outputElement.style.alignItems = "";
-    outputElement.style.justifyContent = "";
     outputElement.style.position = "";
-    outputElement.classList.remove("image-display");
     
     // Reset any drag-drop instruction styling changes
     if (dragDropInstructions) {
       dragDropInstructions.style.backgroundColor = "";
       dragDropInstructions.style.position = "";
-      dragDropInstructions.style.top = "";
-      dragDropInstructions.style.left = "";
-      dragDropInstructions.style.transform = "";
       dragDropInstructions.style.margin = "";
       dragDropInstructions.style.zIndex = "";
       dragDropInstructions.style.display = "";
