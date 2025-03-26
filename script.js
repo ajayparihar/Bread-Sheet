@@ -86,7 +86,8 @@ function init() {
     },
     currentFocusedCell = null,
     isEditing = false,    // Flag to track if a cell is being edited
-    editingCell = null;   // Reference to the cell being edited
+    editingCell = null,   // Reference to the cell being edited
+    clickTimer = null;    // Timer to handle single vs double click
 
   // Initialize settings from localStorage
   initializeSettings();
@@ -1366,7 +1367,14 @@ function init() {
     
     // Always add double-click event listener for desktop, only skip on mobile
     if (!isMobileDevice()) {
-      td.addEventListener("dblclick", () => startEditing(td));
+      td.addEventListener("dblclick", (e) => {
+        // Clear any pending single click timer
+        if (clickTimer) {
+          clearTimeout(clickTimer);
+          clickTimer = null;
+        }
+        startEditing(td);
+      });
     }
     
     return td;
@@ -1377,10 +1385,18 @@ function init() {
     // Skip if already in editing mode
     if (isEditing) return;
     
-    if (cell.classList.contains("non-empty")) {
-      copyToClipboard(cell.textContent);
-      highlightCell(cell);
+    // Clear any existing timer
+    if (clickTimer) {
+        clearTimeout(clickTimer);
     }
+    
+    // Set a new timer for single click
+    clickTimer = setTimeout(() => {
+        if (cell.classList.contains("non-empty")) {
+            copyToClipboard(cell.textContent);
+            highlightCell(cell);
+        }
+    }, 250); // 250ms delay to wait for potential double click
   }
 
   // Copy text to clipboard
