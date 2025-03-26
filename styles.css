@@ -801,7 +801,7 @@ body.light-theme .drag-drop-instructions.active {
   background: var(--color-primary);
   color: white;
   font-size: 1.75rem;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -809,9 +809,6 @@ body.light-theme .drag-drop-instructions.active {
   border: none;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  transform: scale(0);
-  opacity: 0;
-  animation: pulseButton 3s infinite ease-in-out;
 }
 
 body.light-theme .mobile-add-button {
@@ -1115,7 +1112,14 @@ body.light-theme .loading-text {
   }
   
   .drag-drop-instructions {
-    padding: 1.25rem;
+    display: none !important;
+  }
+  
+  .mobile-add-button {
+    display: flex !important;
+    transform: scale(1) !important;
+    opacity: 1 !important;
+    z-index: 1000;
   }
   
   /* Hide keyboard shortcuts button on mobile */
