@@ -731,14 +731,14 @@ body.light-theme .last-clicked {
 .drag-drop-instructions {
   position: relative;
   z-index: 20;
-  background-color: rgba(35, 39, 47, 0.75);
+  background-color: var(--color-container-bg);
   margin: 2rem auto 1rem auto;
   padding: 1.5rem;
-  border: 2px dashed rgba(125, 150, 255, 0.5);
+  border: 2px dashed var(--color-primary);
   border-radius: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: var(--color-secondary);
+  color: var(--color-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -750,35 +750,42 @@ body.light-theme .last-clicked {
   width: auto;
   max-width: 80%;
   min-width: 300px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--glass-shadow);
   animation: fadeInUp 0.5s ease-out forwards;
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
 }
 
 body.light-theme .drag-drop-instructions {
-  background-color: rgba(245, 247, 250, 0.75);
-  border: 2px dashed rgba(58, 87, 210, 0.5);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-container-bg);
+  border: 2px dashed var(--color-primary);
+  box-shadow: var(--glass-shadow);
+  color: var(--color-text);
 }
 
 .drag-drop-instructions:hover {
-  background-color: rgba(35, 39, 47, 0.85);
-  border-color: rgba(125, 150, 255, 0.7);
-  transform: scale(1.05);
+  background-color: var(--color-hover);
+  border-color: var(--color-highlight);
+  transform: scale(1.02);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
 body.light-theme .drag-drop-instructions:hover {
-  background-color: rgba(245, 247, 250, 0.85);
-  border-color: rgba(58, 87, 210, 0.7);
+  background-color: var(--color-hover);
+  border-color: var(--color-highlight);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
 
 .drag-drop-instructions.active {
-  background-color: rgba(125, 150, 255, 0.3);
-  border-color: var(--color-primary);
-  transform: scale(1.1);
+  background-color: var(--color-primary);
+  border-color: var(--color-highlight);
+  transform: scale(1.05);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
 }
 
 body.light-theme .drag-drop-instructions.active {
-  background-color: rgba(58, 87, 210, 0.2);
+  background-color: var(--color-primary);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
 }
 
 .mobile-hint {
@@ -1803,6 +1810,7 @@ input[type="text"]:active + .search-icon {
   font-size: 1.2rem;
   margin-right: 0.5rem;
   transition: transform 0.3s ease;
+  color: var(--color-text);
 }
 
 .drag-drop-instructions:hover .upload-icon {
@@ -1811,6 +1819,7 @@ input[type="text"]:active + .search-icon {
 
 .upload-text {
   transition: all 0.3s ease;
+  color: var(--color-text);
 }
 
 /* Animation for Loading Spinner */
@@ -1856,7 +1865,7 @@ body.light-theme .spinner {
 }
 
 .theme-transition * {
-  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease, filter 0.5s ease;
 }
 
 /* Improved Mobile Button Animation */
@@ -2123,16 +2132,22 @@ body.select-dropdown-active select option {
   width: auto;
   height: auto;
   object-fit: contain;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
   box-shadow: none;
   animation: fadeIn 0.5s ease-in-out;
   display: block;
   position: relative;
   z-index: 1;
+  filter: var(--image-filter, none);
 }
 
 body.light-theme .random-background-image {
   box-shadow: none;
+  --image-filter: brightness(1);
+}
+
+body.dark-theme .random-background-image {
+  --image-filter: brightness(0.95);
 }
 
 /* Add animation for the image loading */
@@ -2156,6 +2171,7 @@ body.light-theme .random-background-image {
   width: 100%;
   height: 100%;
   background-color: var(--color-bg);
+  transition: all 0.3s ease;
 }
 
 /* Ensure the container for random images fills the output area */
@@ -2167,4 +2183,6 @@ body.light-theme .random-background-image {
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.3s ease;
+  background-color: var(--color-bg);
 }

@@ -601,15 +601,44 @@ function init() {
     // Add transition class for smooth theme change
     document.body.classList.add("theme-transition");
     
-    // Apply theme with slight delay for button animation
+    // Force a repaint to ensure transitions work
+    document.body.offsetHeight;
+    
+    // Apply theme
+    applyTheme();
+    
+    // Update drag-drop instructions and image display if present
+    const dragDropInstructions = document.querySelector(".drag-drop-instructions");
+    const imageDisplay = document.querySelector("#output.image-display");
+    const randomImage = document.querySelector(".random-background-image");
+    
+    if (dragDropInstructions) {
+      dragDropInstructions.style.transition = "all 0.3s ease";
+    }
+    
+    if (imageDisplay) {
+      imageDisplay.style.transition = "all 0.3s ease";
+    }
+    
+    if (randomImage) {
+      randomImage.style.transition = "all 0.3s ease";
+    }
+    
+    // Remove transition class after animation completes
     setTimeout(() => {
-      applyTheme();
+      document.body.classList.remove("theme-transition");
       
-      // Remove transition class after animation completes
-      setTimeout(() => {
-        document.body.classList.remove("theme-transition");
-      }, 500);
-    }, 100);
+      // Reset transition properties
+      if (dragDropInstructions) {
+        dragDropInstructions.style.transition = "";
+      }
+      if (imageDisplay) {
+        imageDisplay.style.transition = "";
+      }
+      if (randomImage) {
+        randomImage.style.transition = "";
+      }
+    }, 500);
     
     // Announce theme change for screen readers
     announceForScreenReaders(`Switched to ${isDarkTheme ? "dark" : "light"} theme`);
@@ -2299,7 +2328,7 @@ function init() {
     // Create a random image using picsum.photos with grayscale
     // Use a simple dimension-based URL for better compatibility
     const randomSeed = Math.floor(Math.random() * 1000);
-    const imageUrl = `https://picsum.photos/seed/${randomSeed}/${imageWidth}/${imageHeight}?grayscale`;
+    const imageUrl = `https://picsum.photos/seed/${randomSeed}/${imageWidth}/${imageHeight}`;
     
     console.log("Loading image from:", imageUrl);
     
@@ -2387,7 +2416,7 @@ function init() {
       
       // Try with a different seed
       const newSeed = Math.floor(Math.random() * 1000) + 1000;
-      const fallbackUrl = `https://picsum.photos/seed/${newSeed}/800/600?grayscale`;
+      const fallbackUrl = `https://picsum.photos/seed/${newSeed}/800/600`;
       console.log('Trying fallback URL:', fallbackUrl);
       imgElement.src = fallbackUrl;
       
@@ -2395,7 +2424,7 @@ function init() {
       imgElement.addEventListener('error', () => {
         console.error('Second attempt failed, using final fallback');
         // Try the simplest format as last resort
-        imgElement.src = 'https://picsum.photos/800/600?grayscale';
+        imgElement.src = 'https://picsum.photos/800/600';
       });
     });
     
