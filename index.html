@@ -1,24 +1,71 @@
-<!-- Bread Sheet - Main HTML File -->
-<!-- Author: Ajay Singh -->
-<!-- Version: 1.2 -->
-<!-- Date: 04-06-2024 -->
-<!-- Description: HTML structure for the Bread Sheet application with improved glassomorphic design -->
+<!-- 
+  Bread Sheet - Main HTML File
+  Author: Ajay Singh
+  Version: 1.2
+  Date: 04-06-2024
+  Description: HTML structure for the Bread Sheet application with improved glassomorphic design
+  
+  ARCHITECTURE OVERVIEW:
+  This HTML file implements a modern, accessible spreadsheet viewer application with the following key components:
+  
+  1. SEMANTIC STRUCTURE:
+     - Uses semantic HTML5 elements (nav, main, section) for proper document outline
+     - Implements proper heading hierarchy for screen readers
+     - Follows WAI-ARIA guidelines for complex UI components
+  
+  2. ACCESSIBILITY FEATURES:
+     - Skip links for keyboard navigation
+     - ARIA live regions for dynamic content announcements
+     - Role attributes for custom components (toolbar, tablist, etc.)
+     - Comprehensive labeling and descriptions
+     - Screen reader optimized content structure
+  
+  3. RESPONSIVE DESIGN:
+     - Mobile-first approach with progressive enhancement
+     - Flexible layout system using CSS Grid and Flexbox
+     - Touch-friendly interface elements
+  
+  4. COMPONENT ARCHITECTURE:
+     - Navigation bar with tools and controls
+     - Welcome page for first-time users
+     - Data view with table display and interaction
+     - Modal dialogs for help and tours
+     - Toast notification system
+-->
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- Meta Tags -->
+    <!-- 
+      META TAGS SECTION:
+      Essential meta tags for proper document rendering, SEO optimization,
+      mobile compatibility, and progressive web app functionality
+    -->
+    
+    <!-- Character encoding - UTF-8 for international character support -->
     <meta charset="UTF-8" />
+    
+    <!-- Viewport configuration for responsive design -->
+    <!-- Disables zoom to prevent layout issues on mobile devices -->
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
+    
+    <!-- SEO meta description for search engines -->
     <meta
       name="description"
       content="Bread Sheet is a modern web-based spreadsheet data management application with powerful data manipulation capabilities."
     />
+    
+    <!-- Progressive Web App (PWA) meta tags -->
+    <!-- Theme color for browser UI (dark theme by default) -->
     <meta name="theme-color" content="#0c101a" />
+    
+    <!-- Enable web app capabilities on mobile devices -->
     <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- iOS Safari web app configuration -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
@@ -56,11 +103,25 @@
   </head>
 
   <body>
-    <!-- Skip to content link for accessibility -->
+    <!-- 
+      ACCESSIBILITY SKIP LINKS:
+      Provides keyboard users with quick navigation options to main content areas.
+      These links are visually hidden but become visible when focused via keyboard.
+      Essential for screen reader users and keyboard-only navigation.
+    -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <a href="#data-table" class="skip-link">Skip to data table</a>
     
-    <!-- Navigation Bar -->
+    <!-- 
+      MAIN NAVIGATION BAR:
+      Fixed-position navigation bar containing application branding, search functionality,
+      and primary action buttons. Uses semantic nav element with proper ARIA labeling.
+      
+      Layout Structure:
+      - Left: Application title and version badge
+      - Center: Search functionality (shown when data is loaded)
+      - Right: Import, theme toggle, tools, and export controls
+    -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
       <div class="nav-left">
         <div class="app-title">
@@ -69,14 +130,33 @@
         </div>
       </div>
       
+      <!-- 
+        NAVIGATION CENTER SECTION - SEARCH FUNCTIONALITY:
+        Contains the search component that appears when data is loaded.
+        Implements live search with debounced input handling and visual highlighting.
+        
+        Accessibility Features:
+        - Proper search landmark role
+        - Screen reader instructions
+        - Clear button with descriptive labeling
+        - ARIA live regions for search result announcements
+      -->
       <div class="nav-center">
-        <!-- Search Bar (hidden initially) -->
+        <!-- Search container - initially hidden, shown when data is available -->
         <div id="searchContainer" class="search-container" role="search" aria-label="Data search">
           <div class="search-input-wrapper">
+            <!-- Search icon - decorative SVG hidden from screen readers -->
             <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
               <path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2"/>
             </svg>
+            
+            <!-- 
+              Search input field:
+              - Implements live search with 300ms debounce
+              - Auto-highlights matching text in table cells
+              - Announces results to screen readers
+            -->
             <input
               type="text"
               id="searchInput"
@@ -86,6 +166,8 @@
               role="searchbox"
               autocomplete="off"
             />
+            
+            <!-- Clear search button - appears when search has content -->
             <button id="clearSearch" class="clear-search" title="Clear search" aria-label="Clear search results">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
@@ -93,7 +175,8 @@
               </svg>
             </button>
           </div>
-          <!-- Search instructions for screen readers -->
+          
+          <!-- Hidden instructions for screen reader users -->
           <div id="search-instructions" class="sr-only">Start typing to search through the data. Results will be highlighted in the table.</div>
         </div>
       </div>
@@ -197,9 +280,25 @@
       </div>
     </nav>
     
-    <!-- Main Content -->
+    <!-- 
+      MAIN CONTENT AREA:
+      Primary content container using semantic main element.
+      Contains two main views: welcome page and data view.
+      Implements proper ARIA landmarks for navigation.
+    -->
     <main id="main-content" class="main-content" role="main">
-      <!-- Welcome Page (shown when no file is loaded) -->
+      <!-- 
+        WELCOME PAGE COMPONENT:
+        Initial landing page displayed when no data file is loaded.
+        Provides file upload interface with drag-and-drop functionality.
+        
+        Features:
+        - Prominent application branding and description
+        - Drag-and-drop upload area with visual feedback
+        - File format support indicators
+        - Accessibility-optimized upload interface
+        - Mobile-friendly touch interactions
+      -->
       <section id="welcomePage" class="welcome-page" role="region" aria-labelledby="welcome-heading">
         <div class="welcome-content">
           <div class="welcome-header">
@@ -250,19 +349,51 @@
           </div>
           
         </div>
-      </div>
+      </section>
 
 
       
-      <!-- Data Output Section (hidden initially) -->
+      <!-- 
+        DATA VIEW SECTION:
+        Main data display area shown when a file has been successfully loaded.
+        Contains the spreadsheet table with interactive features.
+        
+        Components:
+        - Sheet tabs (for multi-sheet files)
+        - Data table with keyboard navigation
+        - Cell editing capabilities
+        - Search result highlighting
+        
+        Accessibility Features:
+        - Proper table structure with headers
+        - ARIA grid roles for complex table interactions
+        - Live region for status updates
+        - Keyboard navigation support
+      -->
       <section id="dataView" class="data-view" style="display: none;" role="region" aria-labelledby="data-heading">
+        <!-- Screen reader heading for data section -->
         <h2 id="data-heading" class="sr-only">Data Table View</h2>
+        
+        <!-- Live region for dynamic status announcements -->
         <div id="data-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+        
+        <!-- Main data output container where table content is dynamically generated -->
         <div id="output" role="region" aria-label="Spreadsheet data table" tabindex="0"></div>
       </section>
     </main>
 
-    <!-- Hidden File Upload Input -->
+    <!-- 
+      SYSTEM UI COMPONENTS:
+      Supporting UI elements for file handling, user feedback, and accessibility.
+      These components are dynamically shown/hidden based on user interactions.
+    -->
+    
+    <!-- 
+      HIDDEN FILE INPUT:
+      Standard HTML file input element that's visually hidden but programmatically accessible.
+      Triggered by import button clicks and drag-and-drop operations.
+      Supports multiple file formats with proper MIME type validation.
+    -->
     <input
       type="file"
       id="fileInput"
@@ -271,20 +402,43 @@
       aria-label="Upload Excel, CSV, or text file"
     />
 
-
-    <!-- Loading Indicator with improved animation and progress -->
+    <!-- 
+      LOADING INDICATOR COMPONENT:
+      Provides visual and accessible feedback during file processing operations.
+      
+      Features:
+      - Animated spinner for visual users
+      - Progress bar for large file operations
+      - Dynamic text updates based on operation type
+      - Screen reader announcements via ARIA live regions
+    -->
     <div id="loadingIndicator" class="loading-indicator" style="display: none" role="status" aria-live="polite" aria-atomic="true">
+      <!-- Animated loading spinner -->
       <div class="spinner" aria-hidden="true"></div>
+      
+      <!-- Dynamic loading message -->
       <div class="loading-text">Loading your file...</div>
+      
+      <!-- Progress bar for large file operations -->
       <div class="loading-progress" aria-hidden="true">
         <div class="loading-progress-bar" style="width: 0%"></div>
       </div>
     </div>
 
-    <!-- Toast container for notifications -->
+    <!-- 
+      TOAST NOTIFICATION SYSTEM:
+      Container for temporary notification messages.
+      Provides user feedback for actions like copy, import, export, errors, etc.
+      Uses ARIA live regions for screen reader accessibility.
+    -->
     <div id="toastContainer" class="toast-container" aria-live="assertive" aria-atomic="true" role="alert"></div>
     
-    <!-- ARIA live regions for screen reader announcements -->
+    <!-- 
+      ACCESSIBILITY LIVE REGIONS:
+      Hidden ARIA live regions for screen reader announcements.
+      - Polite: Non-urgent announcements (search results, status updates)
+      - Assertive: Important announcements (errors, critical status changes)
+    -->
     <div id="aria-live-polite" aria-live="polite" aria-atomic="true" class="sr-only"></div>
     <div id="aria-live-assertive" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
     
