@@ -352,14 +352,6 @@ body {
   user-select: none;
 }
 
-.version-badge {
-  background-color: var(--bg-tertiary);
-  color: var(--text-secondary);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius);
-  font-size: var(--font-size-xs);
-  font-weight: 500;
-}
 
 /* Search Container */
 .search-container {
@@ -511,29 +503,31 @@ body {
   color: currentColor;
 }
 
-/* Import Button - Matches Browse Files button styling exactly */
+/* Import Button - Opposite theme background, same theme text */
+/* Dark theme (default): Light background, dark text */
 #importButton.nav-button.import-button {
-  background-color: #FDFDFD !important; /* White background for both themes */
+  background-color: var(--bg-light) !important; /* Light background for dark theme */
   border: 1px solid #ddd !important;
-  color: #0F0F0F !important; /* Dark text on white background */
-}
-
-body.light-theme #importButton.nav-button.import-button {
-  background-color: #FDFDFD !important; /* White background for both themes */
-  border: 1px solid #ddd !important;
-  color: #0F0F0F !important; /* Dark text on white background */
+  color: var(--text-light) !important; /* Dark text matching theme */
 }
 
 #importButton.nav-button.import-button:hover {
   opacity: 0.9 !important;
   transform: translateY(-1px) !important;
-  background-color: #FDFDFD !important;
-  color: #0F0F0F !important; /* Maintain dark text */
+  background-color: var(--bg-light) !important;
+  color: var(--text-light) !important;
+}
+
+/* Light theme: Dark background, light text */
+body.light-theme #importButton.nav-button.import-button {
+  background-color: var(--bg-dark) !important; /* Dark background for light theme */
+  border: 1px solid #333 !important;
+  color: var(--text-dark) !important; /* Light text matching theme */
 }
 
 body.light-theme #importButton.nav-button.import-button:hover {
-  background-color: #FDFDFD !important;
-  color: #0F0F0F !important; /* Maintain dark text */
+  background-color: var(--bg-dark) !important;
+  color: var(--text-dark) !important;
 }
 
 #importButton.nav-button.import-button .nav-icon {
@@ -720,9 +714,11 @@ body.light-theme .welcome-icon svg path {
   font-size: var(--font-size-sm);
 }
 
+/* Browse Files Button - Opposite theme background, same theme text */
+/* Dark theme (default): Light background, dark text */
 .browse-button {
-  background-color: #FDFDFD; /* White background for both themes */
-  color: #0F0F0F; /* Dark text on white background */
+  background-color: var(--bg-light) !important; /* Light background for dark theme */
+  color: var(--text-light) !important; /* Dark text matching theme */
   border: 1px solid #ddd;
   border-radius: var(--radius);
   padding: var(--space-3) var(--space-6);
@@ -732,15 +728,23 @@ body.light-theme .welcome-icon svg path {
   transition: all var(--transition-fast);
 }
 
-body.light-theme .browse-button {
-  background-color: #FDFDFD; /* White background for both themes */
-  color: #0F0F0F; /* Dark text on white background */
-  border: 1px solid #ddd;
-}
-
 .browse-button:hover {
   opacity: 0.9;
   transform: translateY(-1px);
+  background-color: var(--bg-light) !important;
+  color: var(--text-light) !important;
+}
+
+/* Light theme: Dark background, light text */
+body.light-theme .browse-button {
+  background-color: var(--bg-dark) !important; /* Dark background for light theme */
+  color: var(--text-dark) !important; /* Light text matching theme */
+  border: 1px solid #333;
+}
+
+body.light-theme .browse-button:hover {
+  background-color: var(--bg-dark) !important;
+  color: var(--text-dark) !important;
 }
 
 /* Welcome Features */
@@ -1259,10 +1263,6 @@ td.editing {
     max-width: 200px;
   }
   
-  /* Hide version badge on very small screens */
-  .version-badge {
-    display: none;
-  }
   
   /* Touch-friendly buttons */
   .nav-button {
@@ -1904,9 +1904,6 @@ td.editing {
     font-size: var(--font-size-lg);
   }
   
-  .version-badge {
-    display: none;
-  }
   
   .nav-button {
     min-width: 28px;
