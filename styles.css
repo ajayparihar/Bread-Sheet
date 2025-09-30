@@ -19,15 +19,11 @@
   --gray-900: #171717;
   
   /* Professional Status Colors with high contrast */
-  --accent-primary: #2563EB;
-  /* --accent-primary: #FF00FF; */
-  /* --accent-primary: #FFFF00; */
-  /* --accent-primary: #00FF00; */
-  /* --accent-primary: #FF6347; */
-  /* --accent-primary: #FFD700; */
-  /* --accent-primary: #FF5733; */
-  /* --accent-primary: #1E90FF; */
-  --accent-primary-hover: #1D4ED8;
+  /* Theme-based primary accent colors - will be overridden by theme-specific values */
+  --accent-primary: #FDFDFD; /* Default dark theme primary accent */
+  --accent-primary-hover: #F5F5F5;
+  
+  /* Consistent status colors across all themes */
   --accent-success: #16A34A;
   --accent-warning: #D97706;
   --accent-error: #DC2626;
@@ -128,6 +124,10 @@ body {
   --border-light: var(--gray-900);
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+  
+  /* Dark theme accent colors */
+  --accent-primary: #FDFDFD;
+  --accent-primary-hover: #F5F5F5;
 }
 
 /* Light Theme */
@@ -142,7 +142,11 @@ body.light-theme {
   --border-light: var(--gray-100);
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-}}
+  
+  /* Light theme accent colors */
+  --accent-primary: #131313;
+  --accent-primary-hover: #0F0F0F;
+}
 
 /* Screen Reader Only Content */
 .sr-only {
