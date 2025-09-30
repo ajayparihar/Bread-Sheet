@@ -534,14 +534,22 @@ function init() {
       // Show sun icon in dark mode (to switch to light)
       if (sunIcon) sunIcon.style.display = "block";
       if (moonIcon) moonIcon.style.display = "none";
-      if (themeToggle) themeToggle.setAttribute("title", "Switch to light theme");
+      if (themeToggle) {
+        themeToggle.setAttribute("title", "Switch to light theme (Ctrl+T)");
+        themeToggle.setAttribute("aria-label", "Switch to light theme");
+        themeToggle.setAttribute("aria-pressed", "true");
+      }
     } else {
       document.body.classList.add("light-theme");
       document.querySelector('meta[name="theme-color"]').setAttribute("content", "#FDFDFD");
       // Show moon icon in light mode (to switch to dark)
       if (sunIcon) sunIcon.style.display = "none";
       if (moonIcon) moonIcon.style.display = "block";
-      if (themeToggle) themeToggle.setAttribute("title", "Switch to dark theme");
+      if (themeToggle) {
+        themeToggle.setAttribute("title", "Switch to dark theme (Ctrl+T)");
+        themeToggle.setAttribute("aria-label", "Switch to dark theme");
+        themeToggle.setAttribute("aria-pressed", "false");
+      }
     }
   }
   
@@ -1164,7 +1172,7 @@ function init() {
     window.open("#", "_blank");
   }
 
-  // Function to display data with improved styling for glassomorphic UI
+  // Function to display data with improved styling and accessibility
   function displayData(parsedData) {
     if (!parsedData || !parsedData.length) {
       return;
@@ -1174,9 +1182,13 @@ function init() {
     output.innerHTML = "";
     data = parsedData;
 
-    // Create table
+    // Create table with proper accessibility attributes
     const table = document.createElement("table");
-    table.setAttribute("tabindex", "0"); // Make table focusable for keyboard navigation
+    table.setAttribute("id", "data-table");
+    table.setAttribute("tabindex", "0");
+    table.setAttribute("role", "table");
+    table.setAttribute("aria-label", `Data table with ${parsedData.length} rows`);
+    table.setAttribute("aria-rowcount", parsedData.length);
     
     // Calculate max columns from all rows to ensure all data is shown
     let maxColumns = 0;
@@ -1185,17 +1197,49 @@ function init() {
         maxColumns = row.length;
       }
     });
+    table.setAttribute("aria-colcount", maxColumns);
     
-    // Create table body
-    const tbody = document.createElement("tbody");
+    // Create table header if first row looks like headers
+    const hasHeaders = parsedData.length > 1 && parsedData[0].some(cell => 
+      typeof cell === 'string' && cell.trim() !== '' && 
+      !parsedData[1].some(nextCell => typeof nextCell === 'string' && nextCell.includes(cell))
+    );
     
-    // Add data rows
-    parsedData.forEach((row, rowIndex) => {
-      const tr = createTableRow(row, rowIndex);
-      tbody.appendChild(tr);
-    });
+    if (hasHeaders) {
+      const thead = document.createElement("thead");
+      const headerRow = document.createElement("tr");
+      headerRow.setAttribute("role", "row");
+      
+      parsedData[0].forEach((cell, colIndex) => {
+        const th = document.createElement("th");
+        th.textContent = cell || `Column ${colIndex + 1}`;
+        th.setAttribute("role", "columnheader");
+        th.setAttribute("scope", "col");
+        th.setAttribute("aria-sort", "none");
+        th.id = `col-header-${colIndex}`;
+        headerRow.appendChild(th);
+      });
+      
+      thead.appendChild(headerRow);
+      table.appendChild(thead);
+      
+      // Create body with remaining rows
+      const tbody = document.createElement("tbody");
+      parsedData.slice(1).forEach((row, rowIndex) => {
+        const tr = createTableRow(row, rowIndex + 1, true);
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+    } else {
+      // Create table body with all rows
+      const tbody = document.createElement("tbody");
+      parsedData.forEach((row, rowIndex) => {
+        const tr = createTableRow(row, rowIndex, false);
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+    }
     
-    table.appendChild(tbody);
     output.appendChild(table);
     
     // Add keyboard navigation event handler
@@ -1203,24 +1247,53 @@ function init() {
     
     // Initialize keyboard navigation
     initKeyboardNavigation();
+    
+    // Announce table loading for screen readers
+    const rowCount = parsedData.length;
+    const columnCount = maxColumns;
+    announceForScreenReaders(`Table loaded with ${rowCount} rows and ${columnCount} columns. Use arrow keys to navigate.`);
+    
+    // Update data status region
+    const dataStatus = document.getElementById('data-status');
+    if (dataStatus) {
+      dataStatus.textContent = `Spreadsheet loaded: ${rowCount} rows, ${columnCount} columns`;
+    }
   }
 
-  // Create a table row
-  function createTableRow(row, rowIndex) {
+  // Create a table row with proper accessibility attributes
+  function createTableRow(row, rowIndex, hasHeaders = false) {
     const tr = document.createElement("tr");
+    tr.setAttribute("role", "row");
+    tr.setAttribute("aria-rowindex", rowIndex + 1);
+    
     row.forEach((cell, columnIndex) => {
-      const td = createTableCell(cell, rowIndex, columnIndex);
+      const td = createTableCell(cell, rowIndex, columnIndex, hasHeaders);
       tr.appendChild(td);
     });
     return tr;
   }
 
-  // Create a table cell
-  function createTableCell(cell, rowIndex, columnIndex) {
+  // Create a table cell with proper accessibility attributes
+  function createTableCell(cell, rowIndex, columnIndex, hasHeaders = false) {
     const td = document.createElement("td");
-    td.textContent = cell;
+    td.textContent = cell || '';
     td.dataset.row = rowIndex;
     td.dataset.col = columnIndex;
+    td.setAttribute("role", "gridcell");
+    td.setAttribute("aria-colindex", columnIndex + 1);
+    td.setAttribute("tabindex", "-1");
+    
+    // Add headers association if table has headers
+    if (hasHeaders) {
+      td.setAttribute("aria-describedby", `col-header-${columnIndex}`);
+    }
+    
+    // Add accessible description for cell position
+    const cellLabel = hasHeaders 
+      ? `Row ${rowIndex + 1}, ${document.getElementById(`col-header-${columnIndex}`)?.textContent || `Column ${columnIndex + 1}`}` 
+      : `Row ${rowIndex + 1}, Column ${columnIndex + 1}`;
+    td.setAttribute("aria-label", `${cellLabel}: ${cell || 'empty cell'}`);
+    
     if (cell !== "") td.classList.add("non-empty");
     
     // Add event listeners for cell interaction
@@ -1237,6 +1310,18 @@ function init() {
         startEditing(td);
       });
     }
+    
+    // Add keyboard event listeners for accessibility
+    td.addEventListener("keydown", (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (e.key === 'Enter') {
+          startEditing(td);
+        } else {
+          handleCellClick(td);
+        }
+      }
+    });
     
     return td;
   }
@@ -1325,23 +1410,33 @@ function init() {
     focusCell(cell);
   }
 
-  // Show toast notification with improved animation for glassomorphic UI
-  function showToast(message, type = "success") {
+  // Enhanced toast notification with comprehensive feedback
+  function showToast(message, type = "success", duration = 3000) {
     const toastContainer = document.getElementById("toastContainer");
     const toast = document.createElement("div");
     toast.className = `toast ${type}`;
+    toast.setAttribute("role", "alert");
+    toast.setAttribute("aria-live", "assertive");
+    toast.setAttribute("aria-atomic", "true");
     
-    // Add an icon based on the type
+    // Add an icon based on the type with better symbols
     const icon = document.createElement("span");
     icon.className = "toast-icon";
     icon.setAttribute("aria-hidden", "true");
     
+    // Professional icons and colors
     if (type === "success") {
-      icon.textContent = "✓";
+      icon.innerHTML = "✓";
+      toast.setAttribute("aria-label", `Success: ${message}`);
     } else if (type === "warning") {
-      icon.textContent = "!";
+      icon.innerHTML = "⚠";
+      toast.setAttribute("aria-label", `Warning: ${message}`);
+    } else if (type === "info") {
+      icon.innerHTML = "ℹ";
+      toast.setAttribute("aria-label", `Information: ${message}`);
     } else {
-      icon.textContent = "✕";
+      icon.innerHTML = "✕";
+      toast.setAttribute("aria-label", `Error: ${message}`);
     }
     
     // Create a text container for the message
@@ -1349,9 +1444,17 @@ function init() {
     textSpan.className = "toast-text";
     textSpan.textContent = message;
     
+    // Add close button for accessibility
+    const closeButton = document.createElement("button");
+    closeButton.className = "toast-close";
+    closeButton.setAttribute("aria-label", "Close notification");
+    closeButton.innerHTML = "×";
+    closeButton.addEventListener("click", () => dismissToast(toast));
+    
     // Build toast structure
     toast.appendChild(icon);
     toast.appendChild(textSpan);
+    toast.appendChild(closeButton);
     
     // Add progress bar
     const progressBar = document.createElement("div");
@@ -1382,16 +1485,89 @@ function init() {
       progressBar.style.width = "0%";
     }, 10);
     
-    // Remove the toast after 2 seconds
-    setTimeout(() => {
-      toast.classList.remove("show");
-      toast.addEventListener("transitionend", () => {
-        // Safety check: only remove if toast is still a child of the container
-        if (toast.parentNode === toastContainer) {
-          toastContainer.removeChild(toast);
-        }
+    // Enhanced auto-dismiss with configurable duration
+    setTimeout(() => dismissToast(toast), duration);
+    
+    // Also announce to screen readers
+    announceForScreenReaders(message, type === 'error' ? 'assertive' : 'polite');
+  }
+  
+  // Helper function to dismiss toast notifications
+  function dismissToast(toast) {
+    if (!toast || !toast.parentNode) return;
+    
+    toast.classList.remove("show");
+    toast.addEventListener("transitionend", () => {
+      // Safety check: only remove if toast is still a child of the container
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    });
+  }
+  
+  // Enhanced error handling with detailed user feedback
+  function handleError(error, context = 'Unknown', userMessage = null) {
+    console.error(`Error in ${context}:`, error);
+    
+    // Determine user-friendly message
+    let displayMessage = userMessage;
+    if (!displayMessage) {
+      if (error.name === 'TypeError') {
+        displayMessage = 'A technical error occurred. Please try again.';
+      } else if (error.name === 'NetworkError') {
+        displayMessage = 'Network connection issue. Please check your internet connection.';
+      } else if (error.message.includes('file')) {
+        displayMessage = 'File processing error. Please check the file format and try again.';
+      } else {
+        displayMessage = error.message || 'An unexpected error occurred. Please try again.';
+      }
+    }
+    
+    // Show error toast with longer duration
+    showToast(displayMessage, 'error', 5000);
+    
+    // Log to analytics or error reporting service if available
+    if (window.analytics) {
+      window.analytics.track('error', {
+        context,
+        error: error.message,
+        stack: error.stack
       });
-    }, 2000);
+    }
+  }
+  
+  // Success feedback with contextual messages
+  function showSuccessMessage(action, details = null) {
+    let message = '';
+    switch (action) {
+      case 'file_loaded':
+        message = details ? `File loaded successfully! ${details.rows} rows, ${details.columns} columns` : 'File loaded successfully!';
+        break;
+      case 'file_exported':
+        message = details ? `Data exported as ${details.format.toUpperCase()} successfully!` : 'Data exported successfully!';
+        break;
+      case 'data_copied':
+        message = details ? `"${details.substring(0, 30)}..." copied to clipboard` : 'Data copied to clipboard';
+        break;
+      case 'data_refreshed':
+        message = 'Data refreshed from source file';
+        break;
+      default:
+        message = 'Operation completed successfully!';
+    }
+    
+    showToast(message, 'success', 2500);
+  }
+  
+  // Warning messages for user guidance
+  function showWarningMessage(warning, guidance = null) {
+    const message = guidance ? `${warning} ${guidance}` : warning;
+    showToast(message, 'warning', 4000);
+  }
+  
+  // Information messages for user guidance
+  function showInfoMessage(info) {
+    showToast(info, 'info', 3000);
   }
 
   
@@ -1816,25 +1992,27 @@ function init() {
   }
 
   // Function to announce messages to screen readers
-  function announceForScreenReaders(message) {
-    const announcer = document.createElement("div");
-    announcer.setAttribute("aria-live", "assertive");
-    announcer.setAttribute("role", "status");
-    announcer.className = "sr-only";
-    document.body.appendChild(announcer);
+  function announceForScreenReaders(message, priority = 'polite') {
+    const liveRegionId = priority === 'assertive' ? 'aria-live-assertive' : 'aria-live-polite';
+    const announcer = document.getElementById(liveRegionId);
     
-    // Use setTimeout to ensure the element is in the DOM before setting text
-    setTimeout(() => {
-      announcer.textContent = message;
+    if (announcer) {
+      // Clear previous content first
+      announcer.textContent = '';
       
-      // Remove after announcement is made
+      // Use setTimeout to ensure the clearing happens before the new content
       setTimeout(() => {
-        // Check if the node is still in the document before removing
-        if (announcer.parentNode === document.body) {
-          document.body.removeChild(announcer);
-        }
-      }, 1000);
-    }, 100);
+        announcer.textContent = message;
+        
+        // Clear after announcement to allow for repeated announcements
+        setTimeout(() => {
+          announcer.textContent = '';
+        }, 1000);
+      }, 100);
+    } else {
+      // Fallback for when live regions aren't available
+      console.log(`Screen reader announcement: ${message}`);
+    }
   }
   
   // Announce search results
@@ -2059,7 +2237,7 @@ function init() {
     }
   }
 
-  // Add global keyboard shortcut listener for Alt+K
+  // Add global keyboard shortcut listener for Alt+K and F1
   document.addEventListener('keydown', function(e) {
     if (e.key === "k" && e.altKey && !isMobileDevice()) {
       e.preventDefault();
@@ -2072,10 +2250,341 @@ function init() {
       showKeyboardShortcutsLegend();
       return;
     }
+    // F1 for help system
+    if (e.key === "F1") {
+      e.preventDefault();
+      showHelpSystem();
+      return;
+    }
   });
+  
+  // Help System Implementation
+  function showHelpSystem() {
+    const helpOverlay = document.getElementById('helpOverlay');
+    if (!helpOverlay) return;
+    
+    helpOverlay.style.display = 'flex';
+    setTimeout(() => helpOverlay.classList.add('visible'), 10);
+    
+    // Focus management
+    const closeButton = document.getElementById('closeHelp');
+    if (closeButton) closeButton.focus();
+    
+    // Trap focus within help dialog
+    trapFocus(helpOverlay);
+    
+    // Announce for screen readers
+    announceForScreenReaders('Help dialog opened', 'assertive');
+  }
+  
+  function hideHelpSystem() {
+    const helpOverlay = document.getElementById('helpOverlay');
+    if (!helpOverlay) return;
+    
+    helpOverlay.classList.remove('visible');
+    setTimeout(() => {
+      helpOverlay.style.display = 'none';
+    }, 300);
+    
+    // Return focus to trigger element or first focusable element
+    const keyboardShortcutsButton = document.getElementById('showKeyboardShortcuts');
+    if (keyboardShortcutsButton) {
+      keyboardShortcutsButton.focus();
+    }
+    
+    announceForScreenReaders('Help dialog closed');
+  }
+  
+  // Focus trap utility
+  function trapFocus(element) {
+    const focusableElements = element.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstFocusable = focusableElements[0];
+    const lastFocusable = focusableElements[focusableElements.length - 1];
+    
+    element.addEventListener('keydown', function(e) {
+      if (e.key === 'Tab') {
+        if (e.shiftKey) {
+          if (document.activeElement === firstFocusable) {
+            lastFocusable.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastFocusable) {
+            firstFocusable.focus();
+            e.preventDefault();
+          }
+        }
+      }
+      
+      if (e.key === 'Escape') {
+        hideHelpSystem();
+        e.preventDefault();
+      }
+    });
+  }
+  
+  // Tour System Implementation
+  const tourSteps = [
+    {
+      target: '#importButton',
+      title: 'Import Your Data',
+      description: 'Click here to import Excel, CSV, or text files. You can also drag and drop files directly onto the page.',
+      position: 'bottom'
+    },
+    {
+      target: '#searchContainer',
+      title: 'Search Your Data',
+      description: 'Use the search bar to quickly find specific information in your spreadsheet. Results will be highlighted.',
+      position: 'bottom'
+    },
+    {
+      target: '#exportButton',
+      title: 'Export Your Data',
+      description: 'Export your data in various formats including Excel, CSV, HTML, and plain text.',
+      position: 'bottom'
+    },
+    {
+      target: '#themeToggle',
+      title: 'Toggle Theme',
+      description: 'Switch between light and dark themes for comfortable viewing in any environment.',
+      position: 'bottom'
+    },
+    {
+      target: '#toolsButton',
+      title: 'Additional Tools',
+      description: 'Access additional features like data refresh and keyboard shortcuts from the tools menu.',
+      position: 'bottom'
+    }
+  ];
+  
+  let currentTourStep = 0;
+  let tourActive = false;
+  
+  function startTour() {
+    if (tourActive) return;
+    
+    tourActive = true;
+    currentTourStep = 0;
+    
+    // Create tour overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'tour-overlay';
+    overlay.id = 'tourOverlay';
+    document.body.appendChild(overlay);
+    
+    // Hide help system
+    hideHelpSystem();
+    
+    // Show first step
+    showTourStep(currentTourStep);
+    
+    announceForScreenReaders('Interactive tour started', 'assertive');
+  }
+  
+  function showTourStep(stepIndex) {
+    if (stepIndex < 0 || stepIndex >= tourSteps.length) {
+      endTour();
+      return;
+    }
+    
+    const step = tourSteps[stepIndex];
+    const target = document.querySelector(step.target);
+    const tooltip = document.getElementById('tourTooltip');
+    
+    if (!target || !tooltip) {
+      endTour();
+      return;
+    }
+    
+    // Update tooltip content
+    tooltip.querySelector('.tour-step').textContent = `${stepIndex + 1} of ${tourSteps.length}`;
+    tooltip.querySelector('.tour-title').textContent = step.title;
+    tooltip.querySelector('.tour-description').textContent = step.description;
+    
+    // Position tooltip
+    positionTourTooltip(tooltip, target, step.position);
+    
+    // Show tooltip
+    tooltip.style.display = 'block';
+    setTimeout(() => tooltip.classList.add('visible'), 10);
+    
+    // Highlight target
+    highlightElement(target);
+    
+    // Update navigation buttons
+    const prevButton = document.getElementById('tourPrev');
+    const nextButton = document.getElementById('tourNext');
+    
+    if (prevButton) {
+      prevButton.disabled = stepIndex === 0;
+      prevButton.style.opacity = stepIndex === 0 ? '0.5' : '1';
+    }
+    
+    if (nextButton) {
+      nextButton.textContent = stepIndex === tourSteps.length - 1 ? 'Finish' : 'Next';
+    }
+    
+    // Announce step for screen readers
+    announceForScreenReaders(`Tour step ${stepIndex + 1}: ${step.title}. ${step.description}`);
+  }
+  
+  function positionTourTooltip(tooltip, target, position) {
+    const targetRect = target.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    // Remove existing position classes
+    tooltip.classList.remove('top', 'bottom', 'left', 'right');
+    tooltip.classList.add(position);
+    
+    let top, left;
+    
+    switch (position) {
+      case 'top':
+        top = targetRect.top - tooltipRect.height - 12;
+        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+        break;
+      case 'bottom':
+        top = targetRect.bottom + 12;
+        left = targetRect.left + (targetRect.width / 2) - (tooltipRect.width / 2);
+        break;
+      case 'left':
+        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+        left = targetRect.left - tooltipRect.width - 12;
+        break;
+      case 'right':
+        top = targetRect.top + (targetRect.height / 2) - (tooltipRect.height / 2);
+        left = targetRect.right + 12;
+        break;
+    }
+    
+    // Keep tooltip on screen
+    const margin = 16;
+    top = Math.max(margin, Math.min(window.innerHeight - tooltipRect.height - margin, top));
+    left = Math.max(margin, Math.min(window.innerWidth - tooltipRect.width - margin, left));
+    
+    tooltip.style.top = `${top + window.scrollY}px`;
+    tooltip.style.left = `${left + window.scrollX}px`;
+  }
+  
+  function highlightElement(element) {
+    // Remove existing highlights
+    const existingHighlight = document.querySelector('.tour-highlight');
+    if (existingHighlight) existingHighlight.remove();
+    
+    // Create new highlight
+    const highlight = document.createElement('div');
+    highlight.className = 'tour-highlight';
+    
+    const rect = element.getBoundingClientRect();
+    highlight.style.top = `${rect.top + window.scrollY - 4}px`;
+    highlight.style.left = `${rect.left + window.scrollX - 4}px`;
+    highlight.style.width = `${rect.width + 8}px`;
+    highlight.style.height = `${rect.height + 8}px`;
+    
+    document.body.appendChild(highlight);
+    
+    // Scroll element into view
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  
+  function nextTourStep() {
+    if (currentTourStep < tourSteps.length - 1) {
+      currentTourStep++;
+      showTourStep(currentTourStep);
+    } else {
+      endTour();
+    }
+  }
+  
+  function prevTourStep() {
+    if (currentTourStep > 0) {
+      currentTourStep--;
+      showTourStep(currentTourStep);
+    }
+  }
+  
+  function endTour() {
+    tourActive = false;
+    
+    // Hide tooltip
+    const tooltip = document.getElementById('tourTooltip');
+    if (tooltip) {
+      tooltip.classList.remove('visible');
+      setTimeout(() => tooltip.style.display = 'none', 300);
+    }
+    
+    // Remove overlay and highlights
+    const overlay = document.getElementById('tourOverlay');
+    if (overlay) overlay.remove();
+    
+    const highlight = document.querySelector('.tour-highlight');
+    if (highlight) highlight.remove();
+    
+    // Show completion message
+    showToast('Tour completed! You can always press F1 to access help.', 'info', 4000);
+    announceForScreenReaders('Tour completed');
+  }
+  
+  // Event listeners for help and tour systems
+  document.addEventListener('DOMContentLoaded', function() {
+    // Help system event listeners
+    const closeHelpButtons = [document.getElementById('closeHelp'), document.getElementById('closeHelpBottom')];
+    closeHelpButtons.forEach(button => {
+      if (button) {
+        button.addEventListener('click', hideHelpSystem);
+      }
+    });
+    
+    // Tour system event listeners
+    const startTourButton = document.getElementById('startTour');
+    if (startTourButton) {
+      startTourButton.addEventListener('click', startTour);
+    }
+    
+    const tourNext = document.getElementById('tourNext');
+    if (tourNext) {
+      tourNext.addEventListener('click', nextTourStep);
+    }
+    
+    const tourPrev = document.getElementById('tourPrev');
+    if (tourPrev) {
+      tourPrev.addEventListener('click', prevTourStep);
+    }
+    
+    const tourClose = document.querySelector('.tour-close');
+    if (tourClose) {
+      tourClose.addEventListener('click', endTour);
+    }
+    
+    // Close help on overlay click
+    const helpOverlay = document.getElementById('helpOverlay');
+    if (helpOverlay) {
+      helpOverlay.addEventListener('click', function(e) {
+        if (e.target === helpOverlay) {
+          hideHelpSystem();
+        }
+      });
+    }
+  });
+  
+  // Check if this is the user's first visit and show help hint
+  function checkFirstVisit() {
+    const hasVisited = localStorage.getItem('breadsheet_visited');
+    if (!hasVisited) {
+      localStorage.setItem('breadsheet_visited', 'true');
+      
+      // Show welcome message after a delay
+      setTimeout(() => {
+        showInfoMessage('Welcome to Bread Sheet! Press F1 for help or click any Import button to get started.');
+      }, 2000);
+    }
+  }
   
   // Announce application ready for screen readers
   setTimeout(() => {
-    announceForScreenReaders("Bread Sheet application ready. Press Alt+K for keyboard shortcuts.");
+    announceForScreenReaders("Bread Sheet application ready. Press Alt+K for keyboard shortcuts or F1 for help.");
+    checkFirstVisit();
   }, 1000);
 }
