@@ -1872,9 +1872,6 @@ function init() {
     output.appendChild(table);
     console.log('Table appended to output. Table children:', table.children.length);
     
-    // Add keyboard navigation event handler
-    table.addEventListener("keydown", handleTableKeydown);
-    
     // Initialize keyboard navigation
     initKeyboardNavigation();
     
@@ -2283,6 +2280,8 @@ function init() {
     
     // Find the target cell
     const cell = document.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
+    console.log(`moveFocusToCell: looking for cell (${row}, ${col}), found:`, cell ? `${cell.textContent} at (${cell.dataset.row}, ${cell.dataset.col})` : 'null');
+    
     if (!cell) return;
     
     // Add focus to new cell
@@ -2321,6 +2320,10 @@ function init() {
    * Comprehensive keyboard accessibility and navigation implementation
    */
   
+  // Flag to ensure keyboard navigation is only initialized once
+  let keyboardNavigationInitialized = false;
+  let keyboardEventHandler = null;
+  
   /**
    * Initializes the keyboard navigation system for the data table
    * 
@@ -2352,6 +2355,12 @@ function init() {
     const table = document.querySelector('table');
     if (!table) return;
     
+    // Remove previous event listener if it exists
+    if (keyboardEventHandler) {
+      document.removeEventListener('keydown', keyboardEventHandler);
+      keyboardEventHandler = null;
+    }
+    
     /**
      * TABLE FOCUS HANDLER
      * When table receives focus via keyboard, automatically focus first cell
@@ -2367,7 +2376,7 @@ function init() {
      * GLOBAL KEYBOARD EVENT HANDLER
      * Handles all keyboard interactions including navigation and shortcuts
      */
-    document.addEventListener('keydown', function(e) {
+    keyboardEventHandler = function(e) {
       // Skip keyboard handling if user is typing in an input field
       if (e.target.tagName === 'INPUT') return;
       
@@ -2441,6 +2450,7 @@ function init() {
           break;
         case "ArrowDown":
           e.preventDefault();
+          console.log(`ArrowDown: from (${currentRow}, ${currentCol}) to (${currentRow + 1}, ${currentCol})`);
           navigateToCell(currentRow + 1, currentCol);
           break;
         case "ArrowLeft":
@@ -2489,7 +2499,10 @@ function init() {
           clearCellFocus();
           break;
       }
-    });
+    };
+    
+    // Add the event listener
+    document.addEventListener('keydown', keyboardEventHandler);
   }
   
   // Navigate to a specific cell by row and column index
@@ -2497,8 +2510,12 @@ function init() {
     // Ensure row and column are within bounds
     if (!data || data.length === 0) return;
     
+    const originalRow = row;
+    const originalCol = col;
     row = Math.max(0, Math.min(row, data.length - 1));
     col = Math.max(0, Math.min(col, data[0].length - 1));
+    
+    console.log(`navigateToCell: requested (${originalRow}, ${originalCol}), bounded to (${row}, ${col})`);
     
     // Move focus to the cell
     moveFocusToCell(row, col);
