@@ -282,8 +282,8 @@ function init() {
     isRefreshing = true;
     refreshButton.classList.add("refreshing");
     
-    // Show loading indicator
-    showLoadingIndicator();
+    // Show loading indicator with refresh message
+    showLoadingIndicator('Refreshing data from file...');
     
     // Verify file is still accessible
     if (currentFile.size === 0) {
@@ -572,6 +572,8 @@ function init() {
   
   // Apply the selected theme
   function applyTheme() {
+    const themeToggle = document.getElementById("themeToggle");
+    
     // Apply theme class to body
     if (isDarkTheme) {
       document.body.classList.remove("light-theme");
@@ -579,12 +581,14 @@ function init() {
       // Set the theme icon to moon
       const themeIcon = document.querySelector("#themeToggle span[aria-hidden='true']");
       if (themeIcon) themeIcon.textContent = "🌙";
+      if (themeToggle) themeToggle.setAttribute("title", "Switch to light theme");
     } else {
       document.body.classList.add("light-theme");
       document.querySelector('meta[name="theme-color"]').setAttribute("content", "#eef2fa");
       // Set the theme icon to sun
       const themeIcon = document.querySelector("#themeToggle span[aria-hidden='true']");
       if (themeIcon) themeIcon.textContent = "☀️";
+      if (themeToggle) themeToggle.setAttribute("title", "Switch to dark theme");
     }
   }
   
@@ -593,9 +597,11 @@ function init() {
     isDarkTheme = !isDarkTheme;
     localStorage.setItem(STORAGE_KEYS.THEME, isDarkTheme ? "dark" : "light");
     
-    // Update the theme toggle icon
+    // Update the theme toggle icon and tooltip
+    const themeToggle = document.getElementById("themeToggle");
     const themeIcon = document.querySelector("#themeToggle span[aria-hidden='true']");
     themeIcon.textContent = isDarkTheme ? "🌙" : "☀️";
+    themeToggle.setAttribute("title", `Switch to ${isDarkTheme ? 'light' : 'dark'} theme`);
     
     // Add transition class for smooth theme change
     document.body.classList.add("theme-transition");
@@ -643,9 +649,22 @@ function init() {
     announceForScreenReaders(`Switched to ${isDarkTheme ? "dark" : "light"} theme`);
   }
 
+  // Loading state management variables
+  let isLoading = false;
+  let loadingTimeout = null;
+
   // Update the loading indicator functionality
-  function showLoadingIndicator() {
+  function showLoadingIndicator(message = 'Loading your file...') {
+    // Prevent showing loading indicator if already loading
+    if (isLoading) return;
+    
+    isLoading = true;
     const loadingIndicator = document.getElementById('loadingIndicator');
+    const loadingText = loadingIndicator.querySelector('.loading-text');
+    
+    // Update loading text with custom message
+    loadingText.textContent = message;
+    
     loadingIndicator.style.display = 'flex';
     
     // Add visible class after a small delay for the animation to work
@@ -654,18 +673,25 @@ function init() {
     }, 10);
     
     // Announce for screen readers
-    announceForScreenReaders('Loading your file, please wait');
+    announceForScreenReaders(message);
   }
 
   function hideLoadingIndicator() {
+    // Clear any pending loading timeout
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+      loadingTimeout = null;
+    }
+    
     const loadingIndicator = document.getElementById('loadingIndicator');
     
     // First remove the visible class to trigger the fade out animation
     loadingIndicator.classList.remove('visible');
     
     // Then hide the element after the animation completes
-    setTimeout(() => {
+    loadingTimeout = setTimeout(() => {
       loadingIndicator.style.display = 'none';
+      isLoading = false; // Reset loading state
     }, 300);
   }
 
@@ -674,6 +700,13 @@ function init() {
     const file = event.target.files[0];
     
     if (!file) return;
+    
+    // File size validation (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      showToast(`File size (${(file.size / 1024 / 1024).toFixed(1)}MB) exceeds the 10MB limit. Please use a smaller file.`, 'error');
+      return;
+    }
     
     currentFile = file;
     currentFileName = file.name;
@@ -684,12 +717,13 @@ function init() {
     
     // Check if the file type is valid
     if (!isValidFileType(fileExtension)) {
-      showToast(`Unsupported file type: ${fileExtension}. Please use .xlsx, .xls, .csv, or .txt files.`, 'error');
+      showToast(`Unsupported file type: ${fileExtension}. Please use Excel (.xlsx, .xls), CSV (.csv), or text (.txt) files.`, 'error');
       return;
     }
     
-    // Show loading indicator with animation
-    showLoadingIndicator();
+    // Show loading indicator with file-specific message
+    const fileType = fileExtension.toUpperCase();
+    showLoadingIndicator(`Processing ${fileType} file (${(file.size / 1024).toFixed(0)}KB)...`);
     
     // Read the file
     const reader = new FileReader();
@@ -726,6 +760,13 @@ function init() {
     const file = event.dataTransfer.files[0];
     if (!file) return;
     
+    // File size validation (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      showToast(`File size (${(file.size / 1024 / 1024).toFixed(1)}MB) exceeds the 10MB limit. Please use a smaller file.`, 'error');
+      return;
+    }
+    
     // Store the file name and file object for later use
     currentFileName = file.name;
     currentFile = file;
@@ -736,15 +777,16 @@ function init() {
     
     // Check if the file type is valid
     if (!isValidFileType(fileExtension)) {
-      showToast(`Unsupported file type: ${fileExtension}. Please use .xlsx, .xls, .csv, or .txt files.`, 'error');
+      showToast(`Unsupported file type: ${fileExtension}. Please use Excel (.xlsx, .xls), CSV (.csv), or text (.txt) files.`, 'error');
       return;
     }
     
-    // Show loading indicator
-    showLoadingIndicator();
+    // Show loading indicator with file-specific message
+    const fileType = fileExtension.toUpperCase();
+    showLoadingIndicator(`Processing ${fileType} file (${(file.size / 1024).toFixed(0)}KB)...`);
     
+    // Read the file
     const reader = new FileReader();
-    
     reader.onerror = () => {
       hideLoadingIndicator();
       showToast("Error reading file.", "error");
@@ -840,15 +882,20 @@ function init() {
       // Show keyboard shortcuts button on non-mobile devices
       if (!isMobileDevice() && keyboardShortcutsButton) {
         keyboardShortcutsButton.style.display = 'inline-flex';
+        keyboardShortcutsButton.disabled = false;
+        keyboardShortcutsButton.setAttribute("aria-disabled", "false");
       }
       
       // Setup keyboard navigation
       initKeyboardNavigation();
       
-      showToast("File loaded successfully!", "success");
-      
-      // Hide loading indicator
+      // Hide loading indicator first, then show success message
       hideLoadingIndicator();
+      
+      // Show success message after loading indicator is hidden
+      setTimeout(() => {
+        showToast("File loaded successfully!", "success");
+      }, 350);
       
       // Reset file input
       if (!isRefreshing) {
@@ -2217,6 +2264,21 @@ function init() {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       fileInput.click();
+    }
+  });
+  
+  // Add global keyboard shortcut listener for Alt+K (works even without data loaded)
+  document.addEventListener('keydown', function(e) {
+    if (e.key === "k" && e.altKey && !isMobileDevice()) {
+      e.preventDefault();
+      showKeyboardShortcutsLegend();
+      return;
+    }
+    // Also support Shift+? for help
+    if (e.key === "?" && e.shiftKey && !isMobileDevice()) {
+      e.preventDefault();
+      showKeyboardShortcutsLegend();
+      return;
     }
   });
   

@@ -156,9 +156,9 @@
       <input
         type="file"
         id="fileInput"
-        accept=".xlsx, .xls, .csv, .txt"
+        accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain"
         style="display: none"
-        aria-label="Upload file"
+        aria-label="Upload Excel, CSV, or text file"
       />
 
       <!-- Drag-and-Drop Instructions -->
@@ -170,7 +170,8 @@
         aria-label="Upload file - click here or drag and drop"
       >
         <span class="upload-icon" aria-hidden="true">📎</span>
-        <span class="upload-text">Drop Excel, CSV, or text files here or click to browse</span>
+        <span class="upload-text">Drop Excel (.xlsx, .xls), CSV (.csv), or text (.txt) files here or click to browse</span>
+        <span class="upload-hint">Maximum file size: 10MB</span>
       </div>
     </main>
 
