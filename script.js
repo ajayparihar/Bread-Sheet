@@ -2280,8 +2280,6 @@ function init() {
     
     // Find the target cell
     const cell = document.querySelector(`td[data-row="${row}"][data-col="${col}"]`);
-    console.log(`moveFocusToCell: looking for cell (${row}, ${col}), found:`, cell ? `${cell.textContent} at (${cell.dataset.row}, ${cell.dataset.col})` : 'null');
-    
     if (!cell) return;
     
     // Add focus to new cell
@@ -2450,7 +2448,6 @@ function init() {
           break;
         case "ArrowDown":
           e.preventDefault();
-          console.log(`ArrowDown: from (${currentRow}, ${currentCol}) to (${currentRow + 1}, ${currentCol})`);
           navigateToCell(currentRow + 1, currentCol);
           break;
         case "ArrowLeft":
@@ -2493,6 +2490,17 @@ function init() {
           e.preventDefault();
           startEditing(currentFocusedCell);
           break;
+        case "Tab":
+          // Navigate to next/previous cell with Tab key
+          e.preventDefault();
+          if (e.shiftKey) {
+            // Shift+Tab: Move backwards
+            navigateToCell(currentRow, currentCol - 1);
+          } else {
+            // Tab: Move forwards
+            navigateToCell(currentRow, currentCol + 1);
+          }
+          break;
         case "Escape":
           // Clear cell focus when Escape is pressed
           e.preventDefault();
@@ -2505,17 +2513,36 @@ function init() {
     document.addEventListener('keydown', keyboardEventHandler);
   }
   
-  // Navigate to a specific cell by row and column index
+  // Navigate to a specific cell by row and column index with wrapping
   function navigateToCell(row, col) {
-    // Ensure row and column are within bounds
+    // Ensure data exists
     if (!data || data.length === 0) return;
     
+    const maxRows = data.length;
+    const maxCols = data[0].length;
     const originalRow = row;
     const originalCol = col;
-    row = Math.max(0, Math.min(row, data.length - 1));
-    col = Math.max(0, Math.min(col, data[0].length - 1));
     
-    console.log(`navigateToCell: requested (${originalRow}, ${originalCol}), bounded to (${row}, ${col})`);
+    // Handle wrapping for continuous navigation
+    if (row < 0) {
+      // Moving up from first row - go to last row, same column
+      row = maxRows - 1;
+    } else if (row >= maxRows) {
+      // Moving down from last row - go to first row, same column
+      row = 0;
+    }
+    
+    if (col < 0) {
+      // Moving left from first column - go to last column of previous row
+      col = maxCols - 1;
+      row = row - 1;
+      if (row < 0) row = maxRows - 1; // Wrap to last row if needed
+    } else if (col >= maxCols) {
+      // Moving right from last column - go to first column of next row
+      col = 0;
+      row = row + 1;
+      if (row >= maxRows) row = 0; // Wrap to first row if needed
+    }
     
     // Move focus to the cell
     moveFocusToCell(row, col);
@@ -2576,29 +2603,34 @@ function init() {
         document.removeEventListener("click", handleClickOutside);
         e.preventDefault();
       } else if (e.key === "Tab") {
-        // Save and move to next cell
+        // Save and move to next cell with continuous navigation
         finishEditing(true);
         document.removeEventListener("click", handleClickOutside);
         
         const currentRow = parseInt(cell.dataset.row);
         const currentCol = parseInt(cell.dataset.col);
         
-        let nextCell;
+        let newRow = currentRow;
+        let newCol = currentCol;
+        
         if (e.shiftKey) {
-          // Move backwards
-          nextCell = document.querySelector(`td[data-row="${currentRow}"][data-col="${currentCol - 1}"]`);
+          // Move backwards (Shift+Tab)
+          newCol = currentCol - 1;
         } else {
-          // Move forwards
-          nextCell = document.querySelector(`td[data-row="${currentRow}"][data-col="${currentCol + 1}"]`);
+          // Move forwards (Tab)
+          newCol = currentCol + 1;
         }
         
-        if (nextCell) {
-          // Move to the next cell and start editing it
+        // Use the continuous navigation system
+        setTimeout(() => {
+          navigateToCell(newRow, newCol);
+          // Start editing the new cell after navigation
           setTimeout(() => {
-            moveFocusToCell(parseInt(nextCell.dataset.row), parseInt(nextCell.dataset.col));
-            startEditing(nextCell);
+            if (currentFocusedCell) {
+              startEditing(currentFocusedCell);
+            }
           }, 10);
-        }
+        }, 10);
         
         e.preventDefault();
       }
@@ -2682,9 +2714,11 @@ function init() {
     
     // Add all the shortcuts
     const shortcuts = [
-      { key: "Arrow keys", description: "Navigate between cells" },
+      { key: "Arrow keys", description: "Navigate between cells (wraps around edges)" },
+      { key: "Tab / Shift+Tab", description: "Move to next/previous cell (continuous)" },
       { key: "Enter", description: "Edit cell / Save changes" },
-      { key: "Tab / Shift+Tab", description: "Move to next/previous cell" },
+      { key: "Home / End", description: "Jump to first/last cell in row" },
+      { key: "Page Up/Down", description: "Jump to first/last cell in column" },
       { key: "Escape", description: "Cancel editing / Close dialogs" },
       { key: "Ctrl+C", description: "Copy selected cell content" },
       { key: "Ctrl+I", description: "Import file" },
