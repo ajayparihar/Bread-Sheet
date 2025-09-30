@@ -1237,16 +1237,46 @@ function init() {
 
   // Search helper functions
   function highlightTextInCell(cell, searchText) {
+    // Store the EXACT original text content first
     const originalText = cell.textContent;
-    const regex = new RegExp(`(${searchText})`, 'gi');
-    const highlightedText = originalText.replace(regex, '<mark class="search-match">$1</mark>');
-    cell.innerHTML = highlightedText;
+    
+    // Skip if no text content
+    if (!originalText || originalText.trim() === '') return;
+    
+    // Escape special regex characters in search text
+    const escapedSearchText = searchText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedSearchText})`, 'gi');
+    
+    // Check if the search text exists in the original text
+    if (!regex.test(originalText)) return;
+    
+    // Reset regex since test() advances the lastIndex
+    regex.lastIndex = 0;
+    
+    // Create highlighted version by replacing matches (using span to avoid browser mark defaults)
+    const highlightedText = originalText.replace(regex, '<span class="search-match">$1</span>');
+    
+    // Only update if highlighting was actually applied and different from original
+    if (highlightedText !== originalText && highlightedText.includes('<span')) {
+      // Store original text as data attribute for restoration
+      if (!cell.hasAttribute('data-original-text')) {
+        cell.setAttribute('data-original-text', originalText);
+      }
+      cell.innerHTML = highlightedText;
+    }
   }
 
   function restoreOriginalCellText(cell) {
-    // Remove any HTML markup and restore plain text
-    const textContent = cell.textContent || cell.innerText || '';
-    cell.textContent = textContent;
+    // First try to restore from stored original text
+    const originalText = cell.getAttribute('data-original-text');
+    if (originalText) {
+      cell.textContent = originalText;
+      cell.removeAttribute('data-original-text');
+    } else {
+      // Fallback: Remove any HTML markup and restore plain text
+      const textContent = cell.textContent || cell.innerText || '';
+      cell.textContent = textContent;
+    }
   }
 
   function announceSearchResults(matchCount, searchText) {
@@ -1271,13 +1301,17 @@ function init() {
 
   // Table keyboard navigation handler
   function handleTableKeydown(e) {
-    // This function is called by the table's keydown event
-    // Most navigation logic is handled in the global keydown handler
-    // This is just a placeholder for table-specific key handling
+    // Skip if editing a cell
+    if (isEditing) return;
+    
+    // Only handle Tab key here, let global handler manage arrow keys
     if (e.key === 'Tab') {
       e.preventDefault();
       // Let the global handler manage tab navigation
     }
+    
+    // Don't handle arrow keys here - they're handled by the global keydown handler
+    // This prevents double navigation
   }
   
   // Validate XLSX library availability
@@ -2895,55 +2929,8 @@ function init() {
     cell.focus();
   }
 
-  // Handle table keydown events for keyboard navigation
-  function handleTableKeydown(e) {
-    // Skip if editing a cell
-    if (isEditing) return;
-    
-    const target = e.target;
-    
-    // If the table itself has focus, focus the first cell instead
-    if (target.tagName === 'TABLE') {
-      focusFirstCell();
-      e.preventDefault();
-      return;
-    }
-    
-    // Get current position
-    const currentRow = parseInt(target.dataset.row || "0");
-    const currentCol = parseInt(target.dataset.col || "0");
-    
-    // Handle key navigation
-    switch (e.key) {
-      case "ArrowUp":
-        e.preventDefault();
-        navigateToCell(currentRow - 1, currentCol);
-        break;
-      case "ArrowDown":
-        e.preventDefault();
-        navigateToCell(currentRow + 1, currentCol);
-        break;
-      case "ArrowLeft":
-        e.preventDefault();
-        navigateToCell(currentRow, currentCol - 1);
-        break;
-      case "ArrowRight":
-        e.preventDefault();
-        navigateToCell(currentRow, currentCol + 1);
-        break;
-      case "Enter":
-        e.preventDefault();
-        // Start editing cell
-        if (target.tagName === 'TD') {
-          startEditing(target);
-        }
-        break;
-      case "Escape":
-        e.preventDefault();
-        clearCellFocus();
-        break;
-    }
-  }
+  // This duplicate function was causing double navigation - removed
+  // All keyboard navigation is now handled by the global keydown handler in initKeyboardNavigation
 
   // Add global keyboard shortcut listener for Alt+K and F1
   document.addEventListener('keydown', function(e) {
