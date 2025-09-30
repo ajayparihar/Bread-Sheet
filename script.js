@@ -24,10 +24,23 @@
  * - Progressive enhancement for accessibility and performance
  * 
  * DEPENDENCIES:
+ * - constants.js - Design system constants and tokens
  * - XLSX.js library for Excel file parsing and generation
  * - Modern browser APIs: FileReader, Clipboard, LocalStorage
  * - CSS custom properties for dynamic theming
  */
+
+// Import design system constants
+import {
+  COLORS,
+  THEME_COLORS,
+  DIMENSIONS,
+  DURATIONS,
+  SEARCH,
+  LOADING,
+  TOAST,
+  Z_INDEX
+} from './constants.js';
 
 // Initialize application when DOM is fully loaded
 document.addEventListener("DOMContentLoaded", init);
@@ -107,7 +120,9 @@ function addEventHandler(element, event, handler, options = {}) {
  */
 function isMobileDevice() {
   // Screen size detection - mobile devices typically have smaller screens
-  const isMobileBySize = window.innerWidth <= 800;
+  // Using constant for mobile breakpoint
+  const MOBILE_BREAKPOINT = 800; // Could be moved to constants.js if needed
+  const isMobileBySize = window.innerWidth <= MOBILE_BREAKPOINT;
   
   // User agent pattern matching for known mobile device strings
   const isMobileByUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -167,12 +182,12 @@ function init() {
 
   /**
    * MODULAR THEME MANAGEMENT SYSTEM
-   * Theme configuration object - must be defined early
+   * Theme configuration object - now using constants from design system
    */
   const THEME_CONFIG = {
     dark: {
       bodyClass: null,  // No class needed for default dark theme
-      metaColor: "#131313",
+      metaColor: THEME_COLORS.DARK.BG_PRIMARY,
       iconConfig: { sun: "block", moon: "none" },
       buttonConfig: {
         title: "Switch to light theme (Ctrl+T)",
@@ -182,7 +197,7 @@ function init() {
     },
     light: {
       bodyClass: "light-theme",
-      metaColor: "#FDFDFD",
+      metaColor: THEME_COLORS.LIGHT.BG_PRIMARY,
       iconConfig: { sun: "none", moon: "block" },
       buttonConfig: {
         title: "Switch to dark theme (Ctrl+T)",
@@ -262,7 +277,7 @@ function init() {
   addEventHandler(browseButton, "click", triggerFileInput);
   
   // Search functionality events
-  addEventHandler(searchInput, "input", debounce(handleSearch, 300));
+  addEventHandler(searchInput, "input", debounce(handleSearch, SEARCH.DEBOUNCE_DELAY));
   addEventHandler(clearSearch, "click", clearSearchResults);
   
   // Navigation events
@@ -395,7 +410,7 @@ function init() {
       
       if (isMatch) {
         // Apply highlighting for matching cells
-        cell.classList.add('search-highlight');
+        cell.classList.add(SEARCH.HIGHLIGHT_CLASS);
         highlightTextInCell(cell, searchText);  // Visual text highlighting
         matchCount++;
         
@@ -405,7 +420,7 @@ function init() {
         }
       } else {
         // Remove highlighting and restore original text for non-matches
-        cell.classList.remove('search-highlight');
+        cell.classList.remove(SEARCH.HIGHLIGHT_CLASS);
         restoreOriginalCellText(cell);
       }
     });
@@ -415,7 +430,7 @@ function init() {
     
     // Auto-scroll to first match with slight delay for UI smoothness
     if (firstMatch) {
-      setTimeout(() => scrollToVisible(firstMatch), 200);
+      setTimeout(() => scrollToVisible(firstMatch), parseInt(DURATIONS.FAST) + 50);
     }
   }
   
@@ -425,9 +440,9 @@ function init() {
     clearSearch.classList.remove('visible');
     
     // Remove search highlights and restore original text
-    const highlightedCells = document.querySelectorAll('td.search-highlight');
+    const highlightedCells = document.querySelectorAll(`td.${SEARCH.HIGHLIGHT_CLASS}`);
     highlightedCells.forEach(cell => {
-      cell.classList.remove('search-highlight');
+      cell.classList.remove(SEARCH.HIGHLIGHT_CLASS);
       restoreOriginalCellText(cell);
     });
     
@@ -443,19 +458,35 @@ function init() {
   
   // Switch between welcome page and data view
   function showWelcomePage() {
+    console.log('Showing welcome page');
     welcomePage.style.display = 'flex';
     dataView.style.display = 'none';
     toggleSearchBar(false);
     exportButton.disabled = true;
     refreshButton.disabled = true;
+    console.log('Welcome page displayed');
   }
   
   function showDataView() {
+    console.log('Showing data view');
+    if (!welcomePage || !dataView) {
+      console.error('Element references missing:', { welcomePage, dataView });
+      return;
+    }
+    
+    console.log('DataView classes before:', dataView.classList.toString());
     welcomePage.style.display = 'none';
+    
+    // Remove hidden class first (important to do this before setting style)
+    dataView.classList.remove('hidden');
     dataView.style.display = 'block';
+    
     toggleSearchBar(true);
     exportButton.disabled = false;
     refreshButton.disabled = false;
+    
+    console.log('DataView classes after:', dataView.classList.toString());
+    console.log('Data view displayed, current style:', dataView.style.display, 'computed style:', window.getComputedStyle(dataView).display);
   }
   
   // Handle file refresh
@@ -879,7 +910,7 @@ function init() {
     loadingTimeout = setTimeout(() => {
       loadingIndicator.style.display = 'none';
       isLoading = false; // Reset loading state
-    }, 300);
+    }, parseInt(DURATIONS.NORMAL));
   }
   
   // Update loading progress
@@ -928,11 +959,11 @@ function init() {
     if (!file) return;
     
     // FILE SIZE VALIDATION
-    // Enforce 10MB limit to prevent memory issues and ensure reasonable performance
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    // Enforce size limit to prevent memory issues and ensure reasonable performance
+    const maxSize = DIMENSIONS.MAX_FILE_SIZE_BYTES;
     if (file.size > maxSize) {
       const fileSizeMB = (file.size / 1024 / 1024).toFixed(1);
-      showToast(`File size (${fileSizeMB}MB) exceeds the 10MB limit. Please use a smaller file.`, 'error');
+      showToast(`File size (${fileSizeMB}MB) exceeds the ${DIMENSIONS.MAX_FILE_SIZE_MB}MB limit. Please use a smaller file.`, 'error');
       return;
     }
     
@@ -994,10 +1025,10 @@ function init() {
       return;
     }
     
-    // File size validation (10MB limit)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    // File size validation using constants
+    const maxSize = DIMENSIONS.MAX_FILE_SIZE_BYTES;
     if (file.size > maxSize) {
-      showToast(`File size (${(file.size / 1024 / 1024).toFixed(1)}MB) exceeds the 10MB limit. Please use a smaller file.`, 'error');
+      showToast(`File size (${(file.size / 1024 / 1024).toFixed(1)}MB) exceeds the ${DIMENSIONS.MAX_FILE_SIZE_MB}MB limit. Please use a smaller file.`, 'error');
       return;
     }
     
@@ -1078,45 +1109,108 @@ function init() {
 
   // Parse CSV files
   function parseCSV(fileData) {
-    const workbook = XLSX.read(fileData, { type: "string" });
-    const sheetName = workbook.SheetNames[0];
-    currentSheetName = sheetName;
-    currentWorkbook = workbook;
-    
-    // Create sheet selector if multiple sheets exist
-    if (workbook.SheetNames.length > 1) {
-      createSheetSelector(workbook.SheetNames);
+    console.log('parseCSV called');
+    try {
+      const workbook = XLSX.read(fileData, { type: "string" });
+      console.log('CSV workbook created:', workbook);
+      
+      if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+        throw new Error('Invalid CSV file - no sheets found');
+      }
+      
+      const sheetName = workbook.SheetNames[0];
+      console.log('CSV sheet name:', sheetName);
+      currentSheetName = sheetName;
+      currentWorkbook = workbook;
+      
+      // Create sheet selector if multiple sheets exist
+      if (workbook.SheetNames.length > 1) {
+        createSheetSelector(workbook.SheetNames);
+      }
+      
+      const worksheet = workbook.Sheets[sheetName];
+      console.log('CSV worksheet:', worksheet);
+      
+      if (!worksheet) {
+        throw new Error('CSV worksheet not found');
+      }
+      
+      const result = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+      console.log('CSV parsed result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error parsing CSV:', error);
+      throw error;
     }
-    
-    const worksheet = workbook.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
   }
 
   // Parse TXT files (tab-delimited)
   function parseTXT(fileData) {
-    const workbook = XLSX.read(fileData, { type: "string", FS: "\t" });
-    const sheetName = workbook.SheetNames[0];
-    currentSheetName = sheetName;
-    currentWorkbook = workbook;
-    
-    const worksheet = workbook.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+    console.log('parseTXT called');
+    try {
+      const workbook = XLSX.read(fileData, { type: "string", FS: "\t" });
+      console.log('TXT workbook created:', workbook);
+      
+      if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+        throw new Error('Invalid TXT file - no sheets found');
+      }
+      
+      const sheetName = workbook.SheetNames[0];
+      console.log('TXT sheet name:', sheetName);
+      currentSheetName = sheetName;
+      currentWorkbook = workbook;
+      
+      const worksheet = workbook.Sheets[sheetName];
+      console.log('TXT worksheet:', worksheet);
+      
+      if (!worksheet) {
+        throw new Error('TXT worksheet not found');
+      }
+      
+      const result = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+      console.log('TXT parsed result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error parsing TXT:', error);
+      throw error;
+    }
   }
 
   // Parse Excel files (.xlsx, .xls)
   function parseExcel(fileData) {
-    const workbook = XLSX.read(new Uint8Array(fileData), { type: "array" });
-    const sheetName = workbook.SheetNames[0];
-    currentSheetName = sheetName;
-    currentWorkbook = workbook;
-    
-    // Create sheet selector if multiple sheets exist
-    if (workbook.SheetNames.length > 1) {
-      createSheetSelector(workbook.SheetNames);
+    console.log('parseExcel called');
+    try {
+      const workbook = XLSX.read(new Uint8Array(fileData), { type: "array" });
+      console.log('Excel workbook created:', workbook);
+      
+      if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+        throw new Error('Invalid Excel file - no sheets found');
+      }
+      
+      const sheetName = workbook.SheetNames[0];
+      console.log('Excel sheet name:', sheetName);
+      currentSheetName = sheetName;
+      currentWorkbook = workbook;
+      
+      // Create sheet selector if multiple sheets exist
+      if (workbook.SheetNames.length > 1) {
+        createSheetSelector(workbook.SheetNames);
+      }
+      
+      const worksheet = workbook.Sheets[sheetName];
+      console.log('Excel worksheet:', worksheet);
+      
+      if (!worksheet) {
+        throw new Error('Excel worksheet not found');
+      }
+      
+      const result = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+      console.log('Excel parsed result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error parsing Excel:', error);
+      throw error;
     }
-    
-    const worksheet = workbook.Sheets[sheetName];
-    return XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
   }
 
   // Accessibility helper functions
@@ -1216,17 +1310,29 @@ function init() {
   
   // Complete the data loading process
   function finalizeDataLoad(parsedData) {
+    console.log('finalizeDataLoad called with:', parsedData);
+    console.log('finalizeDataLoad - data length:', parsedData.length);
+    
     // Store data references
     originalData = parsedData.map(row => [...row]);
     data = parsedData;
+    console.log('Data references stored');
     
     // Update UI
+    console.log('Preparing data display');
     prepareDataDisplay();
+    
+    console.log('Calling displayData');
     displayData(parsedData);
+    
+    console.log('Showing data view');
     showDataView();
+    
+    console.log('Initializing keyboard navigation');
     initKeyboardNavigation();
     
     // Provide user feedback
+    console.log('Hiding loading indicator and showing success notification');
     hideLoadingIndicator();
     setTimeout(() => notify('success', 'file_loaded'), 350);
     
@@ -1234,6 +1340,8 @@ function init() {
     if (!isRefreshing) {
       setTimeout(() => { fileInput.value = ""; }, 100);
     }
+    
+    console.log('finalizeDataLoad completed');
   }
   
   // Handle file processing errors
@@ -1246,27 +1354,39 @@ function init() {
   
   // Main file loading function (now modularized)
   function loadData(fileData, fileExtension) {
+    console.log('Loading data for file extension:', fileExtension);
+    console.log('File data type:', typeof fileData);
+    console.log('File data length/size:', fileData instanceof ArrayBuffer ? fileData.byteLength : fileData.length);
+    
     try {
       // Step 1: Validate dependencies
       validateDependencies();
+      console.log('Dependencies validated');
       
       // Step 2: Clean up previous data
       cleanupMemory();
+      console.log('Memory cleaned');
       
       // Step 3: Process file data
       const parsedData = processFileData(fileData, fileExtension);
+      console.log('Parsed data:', parsedData);
+      console.log('Parsed data length:', parsedData ? parsedData.length : 'null');
       
       // Step 4: Validate parsed data
       if (!parsedData || parsedData.length === 0) {
+        console.error('No parsed data available');
         hideLoadingIndicator();
         notify('error', "No data found in file");
         return;
       }
       
+      console.log('About to finalize data load with', parsedData.length, 'rows');
+      
       // Step 5: Finalize loading process
       finalizeDataLoad(parsedData);
       
     } catch (error) {
+      console.error('Error in loadData:', error);
       handleFileProcessingError(error);
     }
   }
@@ -1629,17 +1749,28 @@ function init() {
    * - Lazy loading for large datasets
    */
   function displayData(parsedData) {
+    console.log('displayData called with:', parsedData);
+    console.log('displayData - parsedData length:', parsedData ? parsedData.length : 'null/undefined');
+    
     // Input validation - ensure data exists and has content
     if (!parsedData || !parsedData.length) {
+      console.error('displayData: No data to display - parsedData is empty or null');
       return;
     }
 
     // Get output container and clear previous content
     const output = document.getElementById("output");
+    if (!output) {
+      console.error('displayData: Output container not found');
+      return;
+    }
+    console.log('displayData: Found output container');
+    
     output.innerHTML = "";
     
     // Update global data reference for other functions
     data = parsedData;
+    console.log('displayData: Updated global data variable');
 
     /**
      * TABLE ELEMENT CREATION
@@ -1692,15 +1823,20 @@ function init() {
       table.appendChild(tbody);
     } else {
       // Create table body with all rows
+      console.log('Creating table body with', parsedData.length, 'rows');
       const tbody = document.createElement("tbody");
       parsedData.forEach((row, rowIndex) => {
+        console.log('Processing row', rowIndex, ':', row);
         const tr = createTableRow(row, rowIndex, false);
         tbody.appendChild(tr);
       });
       table.appendChild(tbody);
+      console.log('Table body created with', tbody.children.length, 'rows');
     }
     
+    console.log('About to append table to output');
     output.appendChild(table);
+    console.log('Table appended to output. Table children:', table.children.length);
     
     // Add keyboard navigation event handler
     table.addEventListener("keydown", handleTableKeydown);
