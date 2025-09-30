@@ -178,17 +178,30 @@ function init() {
     
     const cells = document.querySelectorAll('td');
     let firstMatch = null;
+    let matchCount = 0;
     
     cells.forEach(cell => {
       const cellText = cell.textContent.toLowerCase();
       const isMatch = cellText.includes(searchText.toLowerCase());
       
-      cell.classList.toggle('highlight', isMatch);
-      
-      if (isMatch && !firstMatch) {
-        firstMatch = cell;
+      if (isMatch) {
+        // Add highlight class and create visual highlight within the cell
+        cell.classList.add('search-highlight');
+        highlightTextInCell(cell, searchText);
+        matchCount++;
+        
+        if (!firstMatch) {
+          firstMatch = cell;
+        }
+      } else {
+        // Remove highlight and restore original text
+        cell.classList.remove('search-highlight');
+        restoreOriginalCellText(cell);
       }
     });
+    
+    // Update search results count in ARIA live region
+    announceSearchResults(matchCount, searchText);
     
     // Scroll to first match
     if (firstMatch) {
@@ -200,8 +213,16 @@ function init() {
   function clearSearchResults() {
     searchInput.value = '';
     clearSearch.classList.remove('visible');
-    const highlightedCells = document.querySelectorAll('td.highlight');
-    highlightedCells.forEach(cell => cell.classList.remove('highlight'));
+    
+    // Remove search highlights and restore original text
+    const highlightedCells = document.querySelectorAll('td.search-highlight');
+    highlightedCells.forEach(cell => {
+      cell.classList.remove('search-highlight');
+      restoreOriginalCellText(cell);
+    });
+    
+    // Clear search results announcement
+    announceForScreenReaders('Search cleared');
   }
   
   
@@ -580,16 +601,25 @@ function init() {
   let loadingTimeout = null;
 
   // Update the loading indicator functionality
-  function showLoadingIndicator(message = 'Loading your file...') {
+  function showLoadingIndicator(message = 'Loading your file...', showProgress = false) {
     // Prevent showing loading indicator if already loading
     if (isLoading) return;
     
     isLoading = true;
     const loadingIndicator = document.getElementById('loadingIndicator');
     const loadingText = loadingIndicator.querySelector('.loading-text');
+    const loadingProgress = loadingIndicator.querySelector('.loading-progress');
     
     // Update loading text with custom message
     loadingText.textContent = message;
+    
+    // Show/hide progress bar
+    if (loadingProgress) {
+      loadingProgress.style.display = showProgress ? 'block' : 'none';
+      if (showProgress) {
+        updateLoadingProgress(0);
+      }
+    }
     
     loadingIndicator.style.display = 'flex';
     
@@ -620,6 +650,14 @@ function init() {
       isLoading = false; // Reset loading state
     }, 300);
   }
+  
+  // Update loading progress
+  function updateLoadingProgress(percentage) {
+    const progressBar = document.querySelector('.loading-progress-bar');
+    if (progressBar) {
+      progressBar.style.width = `${Math.min(100, Math.max(0, percentage))}%`;
+    }
+  }
 
   // Update the handleFileUpload function
   function handleFileUpload(event) {
@@ -643,13 +681,17 @@ function init() {
     
     // Check if the file type is valid
     if (!isValidFileType(fileExtension)) {
-      showToast(`Unsupported file type: ${fileExtension}. Please use Excel (.xlsx, .xls), CSV (.csv), or text (.txt) files.`, 'error');
+      const supportedFormats = 'Excel (.xlsx, .xls), CSV (.csv), or text (.txt)';
+      showToast(`Unsupported file type: ".${fileExtension}". Please use ${supportedFormats} files.`, 'error');
+      announceForScreenReaders(`File type ${fileExtension} is not supported. Please use supported formats: ${supportedFormats}`);
       return;
     }
     
-    // Show loading indicator with file-specific message
+    // Show loading indicator with file-specific message and progress bar for larger files
     const fileType = fileExtension.toUpperCase();
-    showLoadingIndicator(`Processing ${fileType} file (${(file.size / 1024).toFixed(0)}KB)...`);
+    const fileSizeKB = (file.size / 1024).toFixed(0);
+    const showProgress = file.size > 1024 * 1024; // Show progress for files > 1MB
+    showLoadingIndicator(`Processing ${fileType} file (${fileSizeKB}KB)...`, showProgress);
     
     // Read the file
     const reader = new FileReader();
@@ -683,7 +725,10 @@ function init() {
     }
     
     const file = event.dataTransfer.files[0];
-    if (!file) return;
+    if (!file) {
+      showToast("No file detected. Please try again.", "error");
+      return;
+    }
     
     // File size validation (10MB limit)
     const maxSize = 10 * 1024 * 1024; // 10MB in bytes
@@ -702,13 +747,17 @@ function init() {
     
     // Check if the file type is valid
     if (!isValidFileType(fileExtension)) {
-      showToast(`Unsupported file type: ${fileExtension}. Please use Excel (.xlsx, .xls), CSV (.csv), or text (.txt) files.`, 'error');
+      const supportedFormats = 'Excel (.xlsx, .xls), CSV (.csv), or text (.txt)';
+      showToast(`Unsupported file type: ".${fileExtension}". Please use ${supportedFormats} files.`, 'error');
+      announceForScreenReaders(`File type ${fileExtension} is not supported. Please use supported formats: ${supportedFormats}`);
       return;
     }
     
-    // Show loading indicator with file-specific message
+    // Show loading indicator with file-specific message and progress bar for larger files
     const fileType = fileExtension.toUpperCase();
-    showLoadingIndicator(`Processing ${fileType} file (${(file.size / 1024).toFixed(0)}KB)...`);
+    const fileSizeKB = (file.size / 1024).toFixed(0);
+    const showProgress = file.size > 1024 * 1024; // Show progress for files > 1MB
+    showLoadingIndicator(`Processing ${fileType} file (${fileSizeKB}KB)...`, showProgress);
     
     // Read the file
     const reader = new FileReader();
@@ -1204,7 +1253,8 @@ function init() {
     
     // Set a new timer for single click
     clickTimer = setTimeout(() => {
-        if (cell.classList.contains("non-empty")) {
+        // Always copy content for any cell with content, not just "non-empty" ones
+        if (cell.textContent && cell.textContent.trim() !== "") {
             copyToClipboard(cell.textContent);
             highlightCell(cell);
         }
@@ -1217,7 +1267,10 @@ function init() {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard
         .writeText(value.trim())
-        .then(() => showToast(`Copied! - "${value.trim()}"`, "success"))
+        .then(() => {
+          const truncatedValue = value.trim().length > 50 ? value.trim().substring(0, 50) + '...' : value.trim();
+          showToast(`Copied: "${truncatedValue}"`, "success");
+        })
         .catch((err) => {
           // If direct copying fails, try fallback method
           copyToClipboardFallback(value.trim());
@@ -1252,7 +1305,8 @@ function init() {
       }
       
       if (successful) {
-        showToast(`Copied! - "${text}"`, "success");
+        const truncatedText = text.length > 50 ? text.substring(0, 50) + '...' : text;
+        showToast(`Copied: "${truncatedText}"`, "success");
       } else {
         showToast("Copy failed. Try selecting and copying manually.", "warning");
       }
@@ -1413,6 +1467,27 @@ function init() {
       if (e.key === "k" && e.altKey) {
         e.preventDefault();
         showKeyboardShortcutsLegend();
+        return;
+      }
+      
+      // Add Ctrl+T shortcut for theme toggle
+      if (e.key === "t" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        toggleTheme();
+        return;
+      }
+      
+      // Add Ctrl+I shortcut for import
+      if (e.key === "i" && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        fileInput.click();
+        return;
+      }
+      
+      // Add Ctrl+R shortcut for refresh (only if data is loaded)
+      if (e.key === "r" && (e.ctrlKey || e.metaKey) && data && data.length > 0) {
+        e.preventDefault();
+        handleRefresh();
         return;
       }
       
@@ -1677,8 +1752,10 @@ function init() {
       { key: "Tab / Shift+Tab", description: "Move to next/previous cell" },
       { key: "Escape", description: "Cancel editing / Close dialogs" },
       { key: "Ctrl+C", description: "Copy selected cell content" },
+      { key: "Ctrl+I", description: "Import file" },
       { key: "Ctrl+R", description: "Refresh data" },
       { key: "Ctrl+E", description: "Export menu" },
+      { key: "Ctrl+T", description: "Toggle theme" },
       { key: "Alt+K", description: "Show keyboard shortcuts" }
     ];
     
@@ -1758,6 +1835,42 @@ function init() {
         }
       }, 1000);
     }, 100);
+  }
+  
+  // Announce search results
+  function announceSearchResults(matchCount, searchText) {
+    if (matchCount > 0) {
+      announceForScreenReaders(`Found ${matchCount} match${matchCount !== 1 ? 'es' : ''} for "${searchText}"`);
+    } else {
+      announceForScreenReaders(`No matches found for "${searchText}"`);
+    }
+  }
+  
+  // Highlight text within a cell
+  function highlightTextInCell(cell, searchText) {
+    if (!cell.dataset.originalText) {
+      // Store original text content
+      cell.dataset.originalText = cell.textContent;
+    }
+    
+    const originalText = cell.dataset.originalText;
+    const regex = new RegExp(`(${escapeRegExp(searchText)})`, 'gi');
+    const highlightedHTML = originalText.replace(regex, '<mark class="search-match">$1</mark>');
+    
+    cell.innerHTML = highlightedHTML;
+  }
+  
+  // Restore original cell text
+  function restoreOriginalCellText(cell) {
+    if (cell.dataset.originalText) {
+      cell.textContent = cell.dataset.originalText;
+      delete cell.dataset.originalText;
+    }
+  }
+  
+  // Escape special regex characters
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   // Parse Excel files

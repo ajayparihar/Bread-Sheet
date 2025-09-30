@@ -261,14 +261,17 @@
     />
 
 
-    <!-- Loading Indicator with improved animation -->
-    <div id="loadingIndicator" class="loading-indicator" style="display: none" role="status" aria-live="polite">
+    <!-- Loading Indicator with improved animation and progress -->
+    <div id="loadingIndicator" class="loading-indicator" style="display: none" role="status" aria-live="polite" aria-atomic="true">
       <div class="spinner" aria-hidden="true"></div>
       <div class="loading-text">Loading your file...</div>
+      <div class="loading-progress" aria-hidden="true">
+        <div class="loading-progress-bar" style="width: 0%"></div>
+      </div>
     </div>
 
     <!-- Toast container for notifications -->
-    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+    <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true" role="status"></div>
     
     <!-- Main Script -->
     <script src="script.js"></script>

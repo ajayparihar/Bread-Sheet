@@ -604,9 +604,23 @@ tr:hover td {
   background-color: var(--bg-secondary);
 }
 
-td.highlight {
+/* Search highlighting styles */
+td.search-highlight {
   background-color: var(--bg-tertiary) !important;
   color: var(--text-primary) !important;
+}
+
+.search-match {
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+  padding: 1px 2px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+body.light-theme .search-match {
+  background-color: var(--gray-700);
+  color: var(--bg-light);
 }
 
 td.last-clicked {
@@ -727,6 +741,36 @@ td.editing {
   background-color: var(--bg-primary);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius);
+  margin-bottom: var(--space-4);
+}
+
+.loading-progress {
+  width: 200px;
+  height: 4px;
+  background-color: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.loading-progress-bar {
+  height: 100%;
+  background-color: var(--accent-primary);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  transform-origin: left;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @keyframes spin {
