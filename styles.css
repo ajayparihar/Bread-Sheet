@@ -283,17 +283,34 @@ body {
   color: currentColor;
 }
 
-/* Import Button Special Styling */
-.import-button {
-  background-color: var(--accent-primary);
-  border-color: var(--accent-primary);
-  color: var(--text-dark);
-  font-weight: 500;
+/* Import Button - Background opposite theme, text opposite of background */
+#importButton.nav-button.import-button {
+  background-color: #FDFDFD !important; /* Light background for dark theme */
+  border: 1px solid #ddd !important;
+  color: #0F0F0F !important; /* Dark text on light background */
 }
 
-.import-button:hover {
-  background-color: var(--accent-primary-hover);
-  border-color: var(--accent-primary-hover);
+body.light-theme #importButton.nav-button.import-button {
+  background-color: #0F0F0F !important; /* Dark background for light theme */
+  border: 1px solid #333 !important;
+  color: #FDFDFD !important; /* Light text on dark background */
+}
+
+#importButton.nav-button.import-button:hover {
+  opacity: 0.9 !important;
+  transform: translateY(-1px) !important;
+  background-color: #FDFDFD !important;
+  color: #0F0F0F !important; /* Maintain dark text */
+}
+
+body.light-theme #importButton.nav-button.import-button:hover {
+  background-color: #0F0F0F !important;
+  color: #FDFDFD !important; /* Maintain light text */
+}
+
+#importButton.nav-button.import-button .nav-icon {
+  color: inherit !important;
+  stroke: currentColor !important;
 }
 
 /* Dropdown Styles */
@@ -391,7 +408,15 @@ body {
 
 .welcome-icon {
   margin-bottom: var(--space-6);
-  color: var(--accent-primary);
+}
+
+/* Welcome icon with theme-opposite colors */
+.welcome-icon svg path {
+  fill: #FDFDFD; /* Light color for dark theme */
+}
+
+body.light-theme .welcome-icon svg path {
+  fill: #131313; /* Dark color for light theme */
 }
 
 .welcome-header h2 {
@@ -468,19 +493,26 @@ body {
 }
 
 .browse-button {
-  background-color: var(--accent-primary);
-  color: var(--text-dark);
-  border: none;
+  background-color: #FDFDFD; /* Light background for dark theme */
+  color: #0F0F0F; /* Dark text on light background */
+  border: 1px solid #ddd;
   border-radius: var(--radius);
   padding: var(--space-3) var(--space-6);
   font-size: var(--font-size-base);
   font-weight: 500;
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: all var(--transition-fast);
+}
+
+body.light-theme .browse-button {
+  background-color: #0F0F0F; /* Dark background for light theme */
+  color: #FDFDFD; /* Light text on dark background */
+  border: 1px solid #333;
 }
 
 .browse-button:hover {
-  background-color: var(--accent-primary-hover);
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 /* Welcome Features */

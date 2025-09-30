@@ -32,7 +32,6 @@ function init() {
   const importButton = document.getElementById("importButton");
   const exportButton = document.getElementById("exportButton");
   const toolsButton = document.getElementById("toolsButton");
-  const aboutButton = document.getElementById("aboutButton");
   const refreshButton = document.getElementById("refreshButton");
   const keyboardShortcutsButton = document.getElementById("showKeyboardShortcuts");
   const browseButton = document.getElementById("browseButton");
@@ -94,7 +93,6 @@ function init() {
   themeToggle.addEventListener("click", toggleTheme);
   refreshButton.addEventListener("click", handleRefresh);
   keyboardShortcutsButton.addEventListener("click", showKeyboardShortcutsLegend);
-  aboutButton.addEventListener("click", showAbout);
   
   
   // Dropdown functionality
@@ -206,10 +204,6 @@ function init() {
     highlightedCells.forEach(cell => cell.classList.remove('highlight'));
   }
   
-  // Show about dialog
-  function showAbout() {
-    showToast('Bread Sheet v1.2 - Modern spreadsheet viewer and editor', 'info');
-  }
   
   // Show/hide search bar based on data state
   function toggleSearchBar(show) {
