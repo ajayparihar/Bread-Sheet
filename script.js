@@ -3,7 +3,7 @@
 // Version: 1.2
 // Date: 04-06-2024
 // Description: This script handles file reading (Excel/CSV), displays data in a table,
-//              provides search functionality, and supports the enhanced glassomorphic UI design.
+//              and supports the enhanced glassomorphic UI design.
 
 document.addEventListener("DOMContentLoaded", init);
 
@@ -22,54 +22,36 @@ function isMobileDevice() {
 function init() {
   // DOM Elements
   const fileInput = document.getElementById("fileInput");
-  const searchContainer = document.querySelector(".search-bar");
+  const welcomePage = document.getElementById("welcomePage");
+  const dataView = document.getElementById("dataView");
+  const uploadArea = document.getElementById("uploadArea");
+  const searchContainer = document.getElementById("searchContainer");
   const searchInput = document.getElementById("searchInput");
-  const searchOptionsToggle = document.getElementById("searchOptionsToggle");
-  const searchOptionsPanel = document.getElementById("searchOptionsPanel");
-  const columnSelector = document.getElementById("columnSelector");
-  const caseSensitiveCheckbox = document.getElementById("caseSensitive");
-  const regexSearchCheckbox = document.getElementById("regexSearch");
-  const wholeWordCheckbox = document.getElementById("wholeWord");
-  const container = document.querySelector(".container");
-  const dragDropInstructions = document.querySelector(
-    ".drag-drop-instructions"
-  );
+  const clearSearch = document.getElementById("clearSearch");
   const themeToggle = document.getElementById("themeToggle");
+  const importButton = document.getElementById("importButton");
   const exportButton = document.getElementById("exportButton");
-  const exportDropdown = exportButton.closest(".dropdown");
-  const exportOptions = document.querySelectorAll(".dropdown-item");
+  const toolsButton = document.getElementById("toolsButton");
+  const aboutButton = document.getElementById("aboutButton");
   const refreshButton = document.getElementById("refreshButton");
   const keyboardShortcutsButton = document.getElementById("showKeyboardShortcuts");
-  const mobileAddButton = document.querySelector(".mobile-add-button");
-  const actionButtons = document.getElementById("actionButtons");
+  const browseButton = document.getElementById("browseButton");
 
   // Constants for local storage keys
   const STORAGE_KEYS = {
-    THEME: "breadSheetTheme",
-    CONTAINER_WIDTH: "breadSheetContainerWidth",
-    CONTAINER_HEIGHT: "breadSheetContainerHeight",
-    SEARCH_OPTIONS: "breadSheetSearchOptions"
+    THEME: "breadSheetTheme"
   };
 
-  // Hide action buttons by default (no data loaded initially)
-  if (actionButtons) {
-    actionButtons.style.display = 'none';
-  }
+  // Initially show welcome page
+  welcomePage.style.display = 'flex';
+  dataView.style.display = 'none';
+  
+  // Initially disable buttons that require data
+  exportButton.disabled = true;
+  refreshButton.disabled = true;
 
-  // Hide keyboard shortcuts button on mobile
-  if (isMobileDevice() && keyboardShortcutsButton) {
-    keyboardShortcutsButton.style.display = 'none';
-  } else if (keyboardShortcutsButton) {
-    // Also hide on desktop initially since no data is loaded
-    keyboardShortcutsButton.style.display = 'none';
-  }
-
-  // No initial content in the output area when no file is loaded
-
-  let resizeHandle,
-    data = [],
+  let data = [],
     lastClickedCell = null,
-    isResizing = false,
     currentWorkbook = null,
     currentSheetName = "",
     isDarkTheme = true,
@@ -77,12 +59,6 @@ function init() {
     currentFile = null,
     originalData = [], 
     isRefreshing = false,
-    searchOptions = {  // Default search options
-      selectedColumn: "all",
-      caseSensitive: false,
-      useRegex: false,
-      wholeWord: false
-    },
     currentFocusedCell = null,
     isEditing = false,    // Flag to track if a cell is being edited
     editingCell = null,   // Reference to the cell being edited
@@ -90,188 +66,171 @@ function init() {
 
   // Initialize settings from localStorage
   initializeSettings();
-  
-  // Add animation for mobile button
-  animateMobileButton();
 
   // Event Listeners
   fileInput.addEventListener("change", handleFileUpload);
-  searchInput.addEventListener("input", debounce(handleSearch, 300));
-  searchOptionsToggle.addEventListener("click", toggleSearchOptions);
-  columnSelector.addEventListener("change", updateSearchOptions);
-  caseSensitiveCheckbox.addEventListener("change", updateSearchOptions);
-  regexSearchCheckbox.addEventListener("change", updateSearchOptions);
-  wholeWordCheckbox.addEventListener("change", updateSearchOptions);
+  importButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInput.click();
+  });
+  uploadArea.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInput.click();
+  });
+  browseButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInput.click();
+  });
   
-  document
-    .getElementById("projectTitle")
-    .addEventListener("click", refreshPage);
-  document
-    .getElementById("projectTitle")
-    .addEventListener("mousedown", handleTitleMouseDown);
+  // Search functionality
+  searchInput.addEventListener("input", debounce(handleSearch, 300));
+  clearSearch.addEventListener("click", clearSearchResults);
+  
+  // Navigation event listeners
+  document.getElementById("projectTitle").addEventListener("click", refreshPage);
   themeToggle.addEventListener("click", toggleTheme);
   refreshButton.addEventListener("click", handleRefresh);
+  keyboardShortcutsButton.addEventListener("click", showKeyboardShortcutsLegend);
+  aboutButton.addEventListener("click", showAbout);
   
-  // Only set up keyboard shortcuts button listener on non-mobile devices
-  if (!isMobileDevice() && keyboardShortcutsButton) {
-    keyboardShortcutsButton.addEventListener("click", showKeyboardShortcutsLegend);
-  }
   
-  // Close search options panel when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!searchContainer.contains(e.target) && searchOptionsPanel.classList.contains("visible")) {
-      searchOptionsPanel.classList.remove("visible");
-      searchOptionsToggle.setAttribute("aria-expanded", "false");
-      searchOptionsToggle.style.transform = "rotate(0)";
-    }
-  });
-  
-  // Export functionality
-  exportButton.addEventListener("click", () => {
-    exportDropdown.classList.toggle("active");
-    const isExpanded = exportDropdown.classList.contains("active");
-    exportButton.setAttribute("aria-expanded", isExpanded);
-  });
-  
-  // Close dropdown when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!exportDropdown.contains(e.target)) {
-      exportDropdown.classList.remove("active");
-      exportButton.setAttribute("aria-expanded", "false");
-    }
-  });
-  
-  // Handle export format selection
-  exportOptions.forEach(option => {
-    option.addEventListener("click", () => {
-      const format = option.getAttribute("data-format");
-      exportData(format);
-      exportDropdown.classList.remove("active");
-      exportButton.setAttribute("aria-expanded", "false");
-    });
-  });
+  // Dropdown functionality
+  setupDropdowns();
 
   // Drag-and-Drop Event Listeners
-  document.addEventListener("dragover", handleDragOver);
-  document.addEventListener("drop", handleFileDrop);
-  document.addEventListener("dragenter", handleDragEnter);
+  setupDragAndDrop();
 
-  // Initially hide the search bar
-  searchContainer.classList.remove("visible");
   
-  // Toggle search options panel visibility
-  function toggleSearchOptions(e) {
-    e.stopPropagation();
-    const isVisible = searchOptionsPanel.classList.toggle("visible");
-    searchOptionsPanel.setAttribute("aria-hidden", !isVisible);
-    searchOptionsToggle.setAttribute("aria-expanded", isVisible);
+  // Setup dropdown functionality
+  function setupDropdowns() {
+    const dropdowns = document.querySelectorAll('.dropdown');
     
-    if (isVisible) {
-      searchOptionsToggle.style.transform = "rotate(180deg)";
+    dropdowns.forEach(dropdown => {
+      const button = dropdown.querySelector('.nav-button, .action-button');
+      const menu = dropdown.querySelector('.dropdown-menu');
       
-      // Reset to default absolute positioning
-      searchOptionsPanel.style.position = "absolute";
-      searchOptionsPanel.style.top = "calc(100% + 10px)";
-      searchOptionsPanel.style.right = "0";
-      searchOptionsPanel.style.left = "auto";
-      searchOptionsPanel.style.zIndex = "999999";
-      
-      // Force the output to a lower z-index with !important
-      document.getElementById("output").style.cssText += "z-index: 1 !important";
-      
-      // Add a class to body for CSS specificity
-      document.body.classList.add("search-options-active");
-    } else {
-      searchOptionsToggle.style.transform = "rotate(0)";
-      
-      // Reset styling
-      document.getElementById("output").style.cssText = document.getElementById("output").style.cssText.replace("z-index: 1 !important", "");
-      searchOptionsPanel.style.zIndex = "";
-      
-      // Remove the body class
-      document.body.classList.remove("search-options-active");
-    }
-  }
-  
-  // Update search options when changed
-  function updateSearchOptions() {
-    searchOptions.selectedColumn = columnSelector.value;
-    searchOptions.caseSensitive = caseSensitiveCheckbox.checked;
-    searchOptions.useRegex = regexSearchCheckbox.checked;
-    searchOptions.wholeWord = wholeWordCheckbox.checked;
+      if (button && menu) {
+        button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // Close other dropdowns
+          dropdowns.forEach(d => {
+            if (d !== dropdown) {
+              d.classList.remove('active');
+              const btn = d.querySelector('.nav-button, .action-button');
+              if (btn) btn.setAttribute('aria-expanded', 'false');
+            }
+          });
+          
+          // Toggle current dropdown
+          dropdown.classList.toggle('active');
+          button.setAttribute('aria-expanded', dropdown.classList.contains('active'));
+        });
+        
+        // Handle dropdown item clicks
+        menu.querySelectorAll('.dropdown-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const format = item.getAttribute('data-format');
+            if (format) {
+              exportData(format);
+            }
+            dropdown.classList.remove('active');
+            button.setAttribute('aria-expanded', 'false');
+          });
+        });
+      }
+    });
     
-    // If regex is enabled, whole word should be disabled because regex can use \b
-    if (searchOptions.useRegex) {
-      wholeWordCheckbox.disabled = true;
-    } else {
-      wholeWordCheckbox.disabled = false;
-    }
-    
-    // Save options to localStorage
-    localStorage.setItem(STORAGE_KEYS.SEARCH_OPTIONS, JSON.stringify(searchOptions));
-    
-    // Update search results with new options
-    handleSearch();
-  }
-  
-  // Update column selector options (now works with any row that has data)
-  function updateColumnOptions() {
-    // Store the previously selected column value
-    const prevSelectedColumn = searchOptions.selectedColumn;
-    
-    // Clear existing options except "All Columns"
-    while (columnSelector.options.length > 1) {
-      columnSelector.remove(1);
-    }
-    
-    // Add column options if data exists
-    if (data && data.length > 0) {
-      // Find the row with the maximum number of columns to use for headers
-      let maxColumns = 0;
-      let headerRow = [];
-      
-      data.forEach(row => {
-        if (row.length > maxColumns) {
-          maxColumns = row.length;
-          headerRow = row;
-        }
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', () => {
+      dropdowns.forEach(dropdown => {
+        dropdown.classList.remove('active');
+        const button = dropdown.querySelector('.nav-button, .action-button');
+        if (button) button.setAttribute('aria-expanded', 'false');
       });
+    });
+  }
+  
+  // Setup drag and drop functionality
+  function setupDragAndDrop() {
+    const dragElements = [uploadArea, document.body];
+    
+    dragElements.forEach(element => {
+      element.addEventListener('dragover', handleDragOver);
+      element.addEventListener('drop', handleFileDrop);
+      element.addEventListener('dragenter', handleDragEnter);
+      element.addEventListener('dragleave', handleDragLeave);
+    });
+  }
+  
+  // Handle search functionality
+  function handleSearch() {
+    const searchText = searchInput.value.trim();
+    
+    // Show/hide clear button
+    clearSearch.classList.toggle('visible', searchText.length > 0);
+    
+    if (searchText === '') {
+      // Clear all highlights
+      clearSearchResults();
+      return;
+    }
+    
+    const cells = document.querySelectorAll('td');
+    let firstMatch = null;
+    
+    cells.forEach(cell => {
+      const cellText = cell.textContent.toLowerCase();
+      const isMatch = cellText.includes(searchText.toLowerCase());
       
-      // Use the row with max columns for headers
-      for (let i = 0; i < maxColumns; i++) {
-        const option = document.createElement("option");
-        option.value = i.toString();
-        option.textContent = `Column ${i + 1}`;
-        columnSelector.appendChild(option);
+      cell.classList.toggle('highlight', isMatch);
+      
+      if (isMatch && !firstMatch) {
+        firstMatch = cell;
       }
-    }
+    });
     
-    // Check if the previously selected column still exists
-    let columnStillExists = false;
-    if (prevSelectedColumn !== "all") {
-      for (let i = 0; i < columnSelector.options.length; i++) {
-        if (columnSelector.options[i].value === prevSelectedColumn) {
-          columnStillExists = true;
-          break;
-        }
-      }
+    // Scroll to first match
+    if (firstMatch) {
+      setTimeout(() => scrollToVisible(firstMatch), 200);
     }
-    
-    // Set the appropriate column
-    if (prevSelectedColumn === "all" || !columnStillExists) {
-      columnSelector.value = "all";
-      searchOptions.selectedColumn = "all";
-    } else {
-      columnSelector.value = prevSelectedColumn;
-    }
-    
-    // Save updated search options to localStorage
-    localStorage.setItem(STORAGE_KEYS.SEARCH_OPTIONS, JSON.stringify(searchOptions));
-    
-    // If search is active, update search results
-    if (searchInput.value.trim()) {
-      handleSearch();
-    }
+  }
+  
+  // Clear search results
+  function clearSearchResults() {
+    searchInput.value = '';
+    clearSearch.classList.remove('visible');
+    const highlightedCells = document.querySelectorAll('td.highlight');
+    highlightedCells.forEach(cell => cell.classList.remove('highlight'));
+  }
+  
+  // Show about dialog
+  function showAbout() {
+    showToast('Bread Sheet v1.2 - Modern spreadsheet viewer and editor', 'info');
+  }
+  
+  // Show/hide search bar based on data state
+  function toggleSearchBar(show) {
+    searchContainer.classList.toggle('visible', show);
+  }
+  
+  // Switch between welcome page and data view
+  function showWelcomePage() {
+    welcomePage.style.display = 'flex';
+    dataView.style.display = 'none';
+    toggleSearchBar(false);
+    exportButton.disabled = true;
+    refreshButton.disabled = true;
+  }
+  
+  function showDataView() {
+    welcomePage.style.display = 'none';
+    dataView.style.display = 'block';
+    toggleSearchBar(true);
+    exportButton.disabled = false;
+    refreshButton.disabled = false;
   }
   
   // Handle file refresh
@@ -389,32 +348,6 @@ function init() {
   function initializeSettings() {
     // Initialize theme
     initializeTheme();
-    
-    // Initialize container size
-    initializeContainerSize();
-    
-    // Initialize search options
-    initializeSearchOptions();
-  }
-  
-  // Initialize container size from localStorage
-  function initializeContainerSize() {
-    const savedWidth = localStorage.getItem(STORAGE_KEYS.CONTAINER_WIDTH);
-    const savedHeight = localStorage.getItem(STORAGE_KEYS.CONTAINER_HEIGHT);
-    
-    if (savedWidth) {
-      container.style.width = savedWidth;
-    }
-    
-    if (savedHeight) {
-      container.style.height = savedHeight;
-    }
-  }
-  
-  // Save container size to localStorage
-  function saveContainerSize(width, height) {
-    localStorage.setItem(STORAGE_KEYS.CONTAINER_WIDTH, width);
-    localStorage.setItem(STORAGE_KEYS.CONTAINER_HEIGHT, height);
   }
   
   // Export data to different formats
@@ -548,7 +481,10 @@ function init() {
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
+    // Safety check before removing
+    if (a.parentNode === document.body) {
+      document.body.removeChild(a);
+    }
     URL.revokeObjectURL(url);
   }
   
@@ -573,21 +509,23 @@ function init() {
   // Apply the selected theme
   function applyTheme() {
     const themeToggle = document.getElementById("themeToggle");
+    const sunIcon = document.querySelector(".sun-icon");
+    const moonIcon = document.querySelector(".moon-icon");
     
     // Apply theme class to body
     if (isDarkTheme) {
       document.body.classList.remove("light-theme");
-      document.querySelector('meta[name="theme-color"]').setAttribute("content", "#0c101a");
-      // Set the theme icon to moon
-      const themeIcon = document.querySelector("#themeToggle span[aria-hidden='true']");
-      if (themeIcon) themeIcon.textContent = "🌙";
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", "#131313");
+      // Show sun icon in dark mode (to switch to light)
+      if (sunIcon) sunIcon.style.display = "block";
+      if (moonIcon) moonIcon.style.display = "none";
       if (themeToggle) themeToggle.setAttribute("title", "Switch to light theme");
     } else {
       document.body.classList.add("light-theme");
-      document.querySelector('meta[name="theme-color"]').setAttribute("content", "#eef2fa");
-      // Set the theme icon to sun
-      const themeIcon = document.querySelector("#themeToggle span[aria-hidden='true']");
-      if (themeIcon) themeIcon.textContent = "☀️";
+      document.querySelector('meta[name="theme-color"]').setAttribute("content", "#FDFDFD");
+      // Show moon icon in light mode (to switch to dark)
+      if (sunIcon) sunIcon.style.display = "none";
+      if (moonIcon) moonIcon.style.display = "block";
       if (themeToggle) themeToggle.setAttribute("title", "Switch to dark theme");
     }
   }
@@ -596,12 +534,6 @@ function init() {
   function toggleTheme() {
     isDarkTheme = !isDarkTheme;
     localStorage.setItem(STORAGE_KEYS.THEME, isDarkTheme ? "dark" : "light");
-    
-    // Update the theme toggle icon and tooltip
-    const themeToggle = document.getElementById("themeToggle");
-    const themeIcon = document.querySelector("#themeToggle span[aria-hidden='true']");
-    themeIcon.textContent = isDarkTheme ? "🌙" : "☀️";
-    themeToggle.setAttribute("title", `Switch to ${isDarkTheme ? 'light' : 'dark'} theme`);
     
     // Add transition class for smooth theme change
     document.body.classList.add("theme-transition");
@@ -749,8 +681,7 @@ function init() {
   function handleFileDrop(event) {
     event.preventDefault();
     event.stopPropagation();
-    dragDropInstructions.classList.remove("active");
-    container.style.transform = "scale(1)";
+    uploadArea.classList.remove("drag-over");
     
     // Show warning if multiple files were dropped
     if (event.dataTransfer.files.length > 1) {
@@ -811,10 +742,18 @@ function init() {
   function handleDragEnter(event) {
     event.preventDefault();
     event.stopPropagation();
-    dragDropInstructions.classList.add("active");
-    
-    // Add a subtle scale animation to the container
-    container.style.transform = "scale(0.995)";
+    if (uploadArea && uploadArea.contains(event.target)) {
+      uploadArea.classList.add("drag-over");
+    }
+  }
+  
+  // Handle drag leave
+  function handleDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (uploadArea && !uploadArea.contains(event.relatedTarget)) {
+      uploadArea.classList.remove("drag-over");
+    }
   }
 
   // Function to handle loading of data from file
@@ -863,28 +802,8 @@ function init() {
       
       displayData(parsedData);
       
-      // Show the search bar
-      showSearchBar();
-      
-      // Update column options for search
-      updateColumnOptions();
-      
-      // Show and enable export and refresh buttons
-      const actionButtons = document.getElementById("actionButtons");
-      if (actionButtons) {
-        actionButtons.style.display = 'flex';
-      }
-      exportButton.disabled = false;
-      exportButton.setAttribute("aria-disabled", "false");
-      refreshButton.disabled = false;
-      refreshButton.setAttribute("aria-disabled", "false");
-      
-      // Show keyboard shortcuts button on non-mobile devices
-      if (!isMobileDevice() && keyboardShortcutsButton) {
-        keyboardShortcutsButton.style.display = 'inline-flex';
-        keyboardShortcutsButton.disabled = false;
-        keyboardShortcutsButton.setAttribute("aria-disabled", "false");
-      }
+      // Switch to data view
+      showDataView();
       
       // Setup keyboard navigation
       initKeyboardNavigation();
@@ -897,16 +816,22 @@ function init() {
         showToast("File loaded successfully!", "success");
       }, 350);
       
-      // Reset file input
-      if (!isRefreshing) {
-        fileInput.value = "";
-      }
+      // Reset file input to allow re-importing the same file
+      // Note: Reset with a small delay to ensure the import process completes
+      setTimeout(() => {
+        if (!isRefreshing) {
+          fileInput.value = "";
+        }
+      }, 100);
       
     } catch (error) {
       console.error("Error processing file:", error);
       showToast("Error processing file: " + error.message, "error");
       hideLoadingIndicator();
-      fileInput.value = ""; // Reset file input
+      // Reset file input with delay to allow error handling to complete
+      setTimeout(() => {
+        fileInput.value = "";
+      }, 100);
     }
   }
 
@@ -926,10 +851,11 @@ function init() {
     }
     
     // Reset file input if needed
-    if (isRefreshing) {
-      // Don't reset when refreshing
-    } else {
-      fileInput.value = "";
+    // Only reset when not refreshing and with a delay to prevent timing issues
+    if (!isRefreshing) {
+      setTimeout(() => {
+        fileInput.value = "";
+      }, 100);
     }
     
     // Remove event listeners from previous tables
@@ -965,44 +891,20 @@ function init() {
     currentFileName = "";
     currentFile = null;
     
-    // Hide search bar and reset
-    searchContainer.classList.remove("visible");
-    searchInput.value = "";
     
-    // Display a random image in the empty state
-    // Clear any existing content in the output area
+    // Clear content and show welcome page
     const output = document.getElementById("output");
     output.innerHTML = "";
     
-    // Make sure drag-drop instructions are visible
-    if (dragDropInstructions) {
-      dragDropInstructions.style.display = "flex";
-    }
-    
-    // Show drag-drop instructions
-    dragDropInstructions.style.display = "block";
-    
-    // Hide action buttons container
-    const actionButtons = document.getElementById("actionButtons");
-    if (actionButtons) {
-      actionButtons.style.display = 'none';
-    }
-    
-    // Also disable buttons (as a fallback)
-    refreshButton.disabled = true;
-    exportButton.disabled = true;
-    
-    // Hide keyboard shortcuts button
-    if (keyboardShortcutsButton) {
-      keyboardShortcutsButton.style.display = 'none';
-    }
+    // Show welcome page
+    showWelcomePage();
   }
   
   // Create sheet selector dropdown
   function createSheetSelector(sheetNames) {
     // Remove existing selector if it exists
     const existingSelector = document.getElementById("sheetSelector");
-    if (existingSelector) {
+    if (existingSelector && existingSelector.parentNode) {
       existingSelector.parentNode.removeChild(existingSelector);
     }
     
@@ -1072,8 +974,8 @@ function init() {
     // Assemble and add to DOM
     selectorContainer.appendChild(tabsList);
     
-    // Insert after search bar
-    searchContainer.after(selectorContainer);
+    // Insert before data output
+    dataView.prepend(selectorContainer);
   }
   
   // Handle sheet tab keyboard navigation
@@ -1160,9 +1062,6 @@ function init() {
       // Store original data (without sorting assumptions)
       originalData = JSON.parse(JSON.stringify(data));
       
-      // Update column options for search
-      updateColumnOptions();
-      
       // Display the data
       displayData(data);
     } catch (error) {
@@ -1180,156 +1079,8 @@ function init() {
     return ["xlsx", "xls", "csv", "txt"].includes(extension.toLowerCase());
   }
 
-  // Show search bar
-  function showSearchBar() {
-    searchContainer.classList.add("visible");
-    setTimeout(() => {
-      searchInput.focus();
-    }, 300);
-  }
 
-  // Reduce drag-and-drop area size
-  function reduceDragDropArea() {
-    dragDropInstructions.style.padding = "5px";
-    dragDropInstructions.style.fontSize = "0.8em";
-    dragDropInstructions.classList.add("shrunken"); // Add a specific class to handle the visual reduction without affecting animation.
-  }
 
-  // Enable resizing functionality
-  function enableResizing() {
-    resizeHandle = createResizeHandle();
-    container.appendChild(resizeHandle);
-    addResizeListeners();
-  }
-
-  // Create resize handle element
-  function createResizeHandle() {
-    const handle = document.createElement("div");
-    handle.classList.add("resize-handle");
-    return handle;
-  }
-
-  // Add event listeners for resizing
-  function addResizeListeners() {
-    resizeHandle.addEventListener("mousedown", () => (isResizing = true));
-    document.addEventListener("mouseup", () => {
-      if (isResizing) {
-        // Save container size when resizing is done
-        saveContainerSize(container.style.width, container.style.height);
-      }
-      isResizing = false;
-    });
-    document.addEventListener("mousemove", resizeContainer);
-  }
-
-  // Resize container based on mouse movement
-  function resizeContainer(event) {
-    if (!isResizing) return;
-    event.preventDefault();
-
-    const { left, top } = container.getBoundingClientRect();
-    const minWidth = 400;
-    const minHeight = 300;
-    const maxWidth = window.innerWidth - 40;
-
-    const newWidth = Math.min(
-      maxWidth,
-      Math.max(minWidth, event.clientX - left)
-    );
-    const newHeight = Math.max(minHeight, event.clientY - top);
-
-    container.style.width = `${newWidth}px`;
-    container.style.height = `${newHeight}px`;
-  }
-
-  // Cleanup event listeners on page unload
-  window.addEventListener("beforeunload", () => {
-    document.removeEventListener("mouseup", () => (isResizing = false));
-    document.removeEventListener("mousemove", resizeContainer);
-  });
-
-  // Handle search functionality
-  function handleSearch() {
-    const searchText = searchInput.value.trim();
-    
-    // Skip if search text is empty
-    if (searchText === "") {
-      // Clear all highlights
-      const highlightedCells = document.querySelectorAll("td.highlight");
-      highlightedCells.forEach(cell => cell.classList.remove("highlight"));
-      scrollToTop();
-      return;
-    }
-    
-    const cells = document.querySelectorAll("td.non-empty");
-    let firstMatch = null;
-    
-    // Prepare regex pattern if regex search is enabled
-    let searchPattern = null;
-    if (searchOptions.useRegex) {
-      try {
-        searchPattern = new RegExp(
-          searchOptions.wholeWord ? `\\b${searchText}\\b` : searchText,
-          searchOptions.caseSensitive ? "" : "i"
-        );
-      } catch (error) {
-        console.error("Invalid regex pattern:", error);
-        // Show error toast for invalid regex
-        showToast("Invalid regular expression: " + error.message, "error");
-        // Fall back to normal search if regex is invalid
-        searchPattern = null;
-      }
-    }
-
-    cells.forEach((cell) => {
-      // Skip if not matching the selected column
-      if (searchOptions.selectedColumn !== "all") {
-        const columnIndex = parseInt(searchOptions.selectedColumn);
-        if (parseInt(cell.dataset.col) !== columnIndex) {
-          cell.classList.remove("highlight");
-          return;
-        }
-      }
-      
-      const cellText = cell.textContent;
-      let isMatch = false;
-      
-      if (searchPattern) {
-        // Regex search
-        isMatch = searchPattern.test(cellText);
-      } else if (searchOptions.wholeWord) {
-        // Whole word search (non-regex)
-        const wordBoundary = "\\b";
-        const escapedText = escapeRegExp(searchText);
-        const wholeWordPattern = new RegExp(
-          `${wordBoundary}${escapedText}${wordBoundary}`, 
-          searchOptions.caseSensitive ? "" : "i"
-        );
-        isMatch = wholeWordPattern.test(cellText);
-      } else {
-        // Simple text search
-        if (searchOptions.caseSensitive) {
-          isMatch = cellText.includes(searchText);
-        } else {
-          isMatch = cellText.toLowerCase().includes(searchText.toLowerCase());
-        }
-      }
-      
-      cell.classList.toggle("highlight", isMatch);
-      
-      if (isMatch && !firstMatch) {
-        firstMatch = cell;
-      }
-    });
-
-    // Scroll to the first match if found
-    if (firstMatch) {
-      setTimeout(() => scrollToVisible(firstMatch), 200);
-    } else if (searchText) {
-      // Nothing found with search text
-      scrollToTop();
-    }
-  }
 
   // Scroll to the first visible element
   function scrollToVisible(element) {
@@ -1380,15 +1131,6 @@ function init() {
     output.innerHTML = "";
     data = parsedData;
 
-    // Create search bar if it doesn't exist yet
-    showSearchBar();
-    
-    // Show the refresh button
-    refreshButton.disabled = false;
-    
-    // Make export button accessible
-    exportButton.disabled = false;
-
     // Create table
     const table = document.createElement("table");
     table.setAttribute("tabindex", "0"); // Make table focusable for keyboard navigation
@@ -1415,12 +1157,6 @@ function init() {
     
     // Add keyboard navigation event handler
     table.addEventListener("keydown", handleTableKeydown);
-    
-    // Reduce the drag-drop area size
-    reduceDragDropArea();
-    
-    // Update column options for search
-    updateColumnOptions();
     
     // Initialize keyboard navigation
     initKeyboardNavigation();
@@ -1516,7 +1252,10 @@ function init() {
       textArea.select();
       
       const successful = document.execCommand("copy");
-      document.body.removeChild(textArea);
+      // Safety check before removing
+      if (textArea.parentNode === document.body) {
+        document.body.removeChild(textArea);
+      }
       
       if (successful) {
         showToast(`Copied! - "${text}"`, "success");
@@ -1599,42 +1338,15 @@ function init() {
     setTimeout(() => {
       toast.classList.remove("show");
       toast.addEventListener("transitionend", () => {
-        toastContainer.removeChild(toast);
+        // Safety check: only remove if toast is still a child of the container
+        if (toast.parentNode === toastContainer) {
+          toastContainer.removeChild(toast);
+        }
       });
     }, 2000);
   }
 
-  // Initialize search options from localStorage
-  function initializeSearchOptions() {
-    const savedOptions = localStorage.getItem(STORAGE_KEYS.SEARCH_OPTIONS);
-    if (savedOptions) {
-      try {
-        const parsedOptions = JSON.parse(savedOptions);
-        searchOptions = {
-          ...searchOptions,
-          ...parsedOptions
-        };
-        
-        // Apply saved options to UI elements
-        caseSensitiveCheckbox.checked = searchOptions.caseSensitive;
-        regexSearchCheckbox.checked = searchOptions.useRegex;
-        wholeWordCheckbox.checked = searchOptions.wholeWord;
-        
-        // Set whole word checkbox disabled state based on regex
-        wholeWordCheckbox.disabled = searchOptions.useRegex;
-        
-        // We'll set the column selector value after populating it with options
-        // This happens in updateColumnOptions()
-      } catch (error) {
-        console.error("Error parsing saved search options:", error);
-      }
-    }
-  }
   
-  // Helper function to escape regex special characters
-  function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
 
   // Move keyboard focus to a specified cell
   function moveFocusToCell(row, col) {
@@ -1779,14 +1491,6 @@ function init() {
             copyToClipboard(currentFocusedCell.textContent);
           }
           break;
-        case "f":
-          // Focus on search input when Ctrl+F is pressed
-          if (e.ctrlKey || e.metaKey) {
-            e.preventDefault();
-            searchInput.focus();
-            searchInput.select();
-          }
-          break;
         case "Enter":
           // Start editing the current cell when Enter is pressed
           e.preventDefault();
@@ -1912,12 +1616,6 @@ function init() {
       
       // Update UI
       editingCell.textContent = newValue;
-      
-      // Update column options for search
-      updateColumnOptions();
-      
-      // Handle search
-      handleSearch();
     } else {
       // If not saving changes, restore the original content
       const originalValue = data[parseInt(editingCell.dataset.row)][parseInt(editingCell.dataset.col)];
@@ -1984,7 +1682,6 @@ function init() {
       { key: "Enter", description: "Edit cell / Save changes" },
       { key: "Tab / Shift+Tab", description: "Move to next/previous cell" },
       { key: "Escape", description: "Cancel editing / Close dialogs" },
-      { key: "Ctrl+F", description: "Focus search box" },
       { key: "Ctrl+C", description: "Copy selected cell content" },
       { key: "Ctrl+R", description: "Refresh data" },
       { key: "Ctrl+E", description: "Export menu" },
@@ -2062,7 +1759,7 @@ function init() {
       // Remove after announcement is made
       setTimeout(() => {
         // Check if the node is still in the document before removing
-        if (document.body.contains(announcer)) {
+        if (announcer.parentNode === document.body) {
           document.body.removeChild(announcer);
         }
       }, 1000);
@@ -2255,19 +1952,7 @@ function init() {
     }
   }
 
-  // Initialize the application
-  initializeSettings();
-  initKeyboardNavigation();
-  
-  // Make drag-drop instructions accessible with keyboard
-  dragDropInstructions.addEventListener("keydown", function(event) {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      fileInput.click();
-    }
-  });
-  
-  // Add global keyboard shortcut listener for Alt+K (works even without data loaded)
+  // Add global keyboard shortcut listener for Alt+K
   document.addEventListener('keydown', function(e) {
     if (e.key === "k" && e.altKey && !isMobileDevice()) {
       e.preventDefault();
@@ -2286,84 +1971,4 @@ function init() {
   setTimeout(() => {
     announceForScreenReaders("Bread Sheet application ready. Press Alt+K for keyboard shortcuts.");
   }, 1000);
-
-  // Animate the mobile add button
-  function animateMobileButton() {
-    if (window.innerWidth <= 800) {
-      setTimeout(() => {
-        mobileAddButton.style.transform = "scale(1)";
-        mobileAddButton.style.opacity = "1";
-      }, 500);
-    }
-  }
-  
-  // Add resize event listener to handle mobile button visibility
-  window.addEventListener("resize", debounce(() => {
-    if (window.innerWidth <= 800) {
-      mobileAddButton.style.transform = "scale(1)";
-      mobileAddButton.style.opacity = "1";
-      
-      // Hide keyboard shortcuts button on mobile
-      if (keyboardShortcutsButton) {
-        keyboardShortcutsButton.style.display = 'none';
-      }
-      
-      // Hide mobile hint message
-      const mobileHint = document.querySelector('.mobile-hint');
-      if (mobileHint) {
-        mobileHint.style.display = 'none';
-      }
-    } else {
-      mobileAddButton.style.transform = "scale(0)";
-      mobileAddButton.style.opacity = "0";
-      
-      // Show keyboard shortcuts button on desktop
-      if (keyboardShortcutsButton) {
-        keyboardShortcutsButton.style.display = '';
-      }
-    }
-  }, 250));
-
-  // Add special handling for select dropdown to ensure it's visible
-  columnSelector.addEventListener("mousedown", function() {
-    // Add special class that applies the highest z-index when dropdown is clicked
-    document.body.classList.add("select-dropdown-active");
-    
-    // Ensure the dropdown appears on top
-    setTimeout(() => {
-      document.getElementById("output").style.cssText += "z-index: 1 !important";
-      searchOptionsPanel.style.zIndex = "9999999";
-      columnSelector.style.zIndex = "10000000";
-      
-      // Add event listener to reset when focus is lost
-      const resetDropdown = () => {
-        document.body.classList.remove("select-dropdown-active");
-        document.removeEventListener("mousedown", resetDropdown);
-      };
-      
-      document.addEventListener("mousedown", resetDropdown);
-    }, 10);
-  });
-
-  // Function to display a random image when no file is loaded
-
-
-  // Helper function to reset output styling for data display
-  function resetOutputForDataDisplay(outputElement) {
-    // Reset basic styling
-    outputElement.style.padding = "";
-    outputElement.style.overflow = "";
-    outputElement.style.height = "";
-    outputElement.style.display = "";
-    outputElement.style.position = "";
-    
-    // Reset any drag-drop instruction styling changes
-    if (dragDropInstructions) {
-      dragDropInstructions.style.backgroundColor = "";
-      dragDropInstructions.style.position = "";
-      dragDropInstructions.style.margin = "";
-      dragDropInstructions.style.zIndex = "";
-      dragDropInstructions.style.display = "";
-    }
-  }
 }
