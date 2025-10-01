@@ -74,9 +74,11 @@
   --accent-error: #DC2626;    /* Error states - red */
   --accent-info: #388497;     /* Information states - cyan */
   
-  /* Focus and interaction states */
-  --focus-ring: 0 0 0 2px var(--accent-primary);
-  --focus-ring-offset: 0 0 0 4px rgba(37, 99, 235, 0.2);
+  /* Focus and interaction states - Enhanced for better visibility */
+  --focus-ring: 0 0 0 2px #2563EB;  /* Blue focus ring for better visibility */
+  --focus-ring-offset: 0 0 0 4px rgba(37, 99, 235, 0.3);
+  --focus-visible: 2px solid #2563EB;
+  --focus-visible-offset: 2px;
   
   /**
    * SPACING SYSTEM
@@ -154,10 +156,20 @@
   --sidebar-width: 280px;
   --content-max-width: 1200px;
   
-  /* Enhanced transitions */
+/* Enhanced transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Status colors */
+  --status-success-bg: rgba(22, 163, 74, 0.1);
+  --status-success-border: var(--accent-success);
+  --status-error-bg: rgba(220, 38, 38, 0.1);
+  --status-error-border: var(--accent-error);
+  --status-warning-bg: rgba(217, 119, 6, 0.1);
+  --status-warning-border: var(--accent-warning);
+  --status-info-bg: rgba(56, 132, 151, 0.1);
+  --status-info-border: var(--accent-info);
   
   /* Professional shadows */
   --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -174,8 +186,8 @@ body {
   --bg-secondary: var(--gray-900);
   --bg-tertiary: var(--gray-800);
   --text-primary: var(--text-dark);
-  --text-secondary: var(--gray-400);
-  --text-muted: var(--gray-500);
+  --text-secondary: #B3B3B3;  /* Improved from #A3A3A3 for better contrast */
+  --text-muted: #8A8A8A;      /* Improved from #737373 for better contrast */
   --border: var(--gray-800);
   --border-light: var(--gray-900);
   --border-medium: var(--gray-700);
@@ -193,8 +205,8 @@ body.light-theme {
   --bg-secondary: var(--gray-50);
   --bg-tertiary: var(--gray-100);
   --text-primary: var(--text-light);
-  --text-secondary: var(--gray-600);
-  --text-muted: var(--gray-400);
+  --text-secondary: #484848;  /* Improved from #525252 for better contrast */
+  --text-muted: #616161;      /* Improved from #A3A3A3 for better contrast */
   --border: var(--gray-200);
   --border-light: var(--gray-100);
   --border-medium: var(--gray-300);
@@ -2136,6 +2148,331 @@ body.light-theme .nav-button.theme-toggle .nav-icon {
 
 .justify-end {
   justify-content: flex-end !important;
+}
+
+/* =============================================================================
+   ENHANCED ACCESSIBILITY - FOCUS INDICATORS
+   Improved focus visibility for WCAG 2.1 AA compliance
+   ============================================================================= */
+
+/* Enhanced focus styles for all interactive elements */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+[role="menuitem"]:focus-visible {
+  outline: var(--focus-visible) !important;
+  outline-offset: var(--focus-visible-offset) !important;
+  box-shadow: var(--focus-ring) !important;
+}
+
+/* Table cell focus indicator */
+td:focus-visible,
+th:focus-visible {
+  outline: 3px solid #2563EB !important;
+  outline-offset: 2px !important;
+  background-color: rgba(37, 99, 235, 0.1) !important;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --focus-ring: 0 0 0 3px #000000;
+    --focus-visible: 3px solid #000000;
+  }
+  
+  body.light-theme {
+    --text-secondary: #000000;
+    --text-muted: #333333;
+  }
+  
+  body {
+    --text-secondary: #FFFFFF;
+    --text-muted: #CCCCCC;
+  }
+}
+
+/* =============================================================================
+   OPERATION STATUS COMPONENT
+   Visible status area for file import/export operations
+   ============================================================================= */
+
+.operation-status {
+  position: fixed;
+  top: calc(var(--nav-height) + var(--space-4));
+  right: var(--space-6);
+  z-index: 1000;
+  min-width: 300px;
+  max-width: 500px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+  transform: translateX(calc(100% + var(--space-6)));
+  opacity: 0;
+}
+
+.operation-status:not(.hidden) {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.status-content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+}
+
+.status-message {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  line-height: var(--line-height-snug);
+}
+
+.status-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.status-close:hover,
+.status-close:focus {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Status type variations */
+.operation-status.success {
+  border-color: var(--status-success-border);
+  background: var(--status-success-bg);
+}
+
+.operation-status.success .status-icon {
+  color: var(--accent-success);
+  background: rgba(22, 163, 74, 0.15);
+}
+
+.operation-status.error {
+  border-color: var(--status-error-border);
+  background: var(--status-error-bg);
+}
+
+.operation-status.error .status-icon {
+  color: var(--accent-error);
+  background: rgba(220, 38, 38, 0.15);
+}
+
+.operation-status.warning {
+  border-color: var(--status-warning-border);
+  background: var(--status-warning-bg);
+}
+
+.operation-status.warning .status-icon {
+  color: var(--accent-warning);
+  background: rgba(217, 119, 6, 0.15);
+}
+
+.operation-status.info {
+  border-color: var(--status-info-border);
+  background: var(--status-info-bg);
+}
+
+.operation-status.info .status-icon {
+  color: var(--accent-info);
+  background: rgba(56, 132, 151, 0.15);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .operation-status {
+    top: calc(var(--nav-height) + var(--space-2));
+    right: var(--space-4);
+    left: var(--space-4);
+    min-width: auto;
+    max-width: none;
+  }
+  
+  .status-content {
+    padding: var(--space-3);
+  }
+}
+
+/* =============================================================================
+   TOOLTIP COMPONENT
+   Contextual help system for UI elements
+   ============================================================================= */
+
+.tooltip {
+  position: absolute;
+  z-index: 1100;
+  max-width: 300px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+}
+
+.tooltip:not(.hidden) {
+  opacity: 1;
+}
+
+.tooltip-content {
+  position: relative;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-2) var(--space-3);
+}
+
+.tooltip-text {
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-snug);
+  font-weight: var(--font-weight-medium);
+}
+
+.tooltip-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+/* Tooltip positioning */
+.tooltip.top {
+  transform: translateY(-8px);
+}
+
+.tooltip.top .tooltip-arrow {
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  border-top: none;
+  border-left: none;
+}
+
+.tooltip.bottom {
+  transform: translateY(8px);
+}
+
+.tooltip.bottom .tooltip-arrow {
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  border-bottom: none;
+  border-right: none;
+}
+
+.tooltip.left {
+  transform: translateX(-8px);
+}
+
+.tooltip.left .tooltip-arrow {
+  right: -5px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  border-left: none;
+  border-bottom: none;
+}
+
+.tooltip.right {
+  transform: translateX(8px);
+}
+
+.tooltip.right .tooltip-arrow {
+  left: -5px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  border-right: none;
+  border-top: none;
+}
+
+/* Tooltip variations for different types */
+.tooltip.help {
+  max-width: 250px;
+}
+
+.tooltip.help .tooltip-content {
+  background: var(--accent-info);
+  color: white;
+  border-color: var(--accent-info);
+}
+
+.tooltip.help .tooltip-arrow {
+  background: var(--accent-info);
+  border-color: var(--accent-info);
+}
+
+.tooltip.shortcut {
+  max-width: 200px;
+}
+
+.tooltip.shortcut .tooltip-content {
+  background: var(--bg-tertiary);
+  border-color: var(--border-medium);
+}
+
+.tooltip.shortcut .tooltip-arrow {
+  background: var(--bg-tertiary);
+  border-color: var(--border-medium);
+}
+
+/* Keyboard shortcut styling within tooltips */
+.tooltip kbd {
+  display: inline-block;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1px var(--space-1);
+  font-size: var(--font-size-xs);
+  font-family: monospace;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0 1px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .tooltip {
+    max-width: 200px;
+  }
+  
+  .tooltip-text {
+    font-size: 11px;
+  }
 }
 
 .justify-between {
