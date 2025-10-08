@@ -2080,7 +2080,9 @@ function init() {
       startEditing(cell);
     },
     keydown: (cell) => (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      // Only handle keyboard events if not currently editing a cell
+      // This allows normal typing (including spaces) when editing
+      if (!isEditing && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault();
         e.key === 'Enter' ? startEditing(cell) : handleCellClick(cell);
       }
@@ -2254,13 +2256,13 @@ function init() {
   
   // Main clipboard function with single responsibility: Copy text to clipboard
   function copyToClipboard(value) {
-    const trimmedValue = value.trim();
+    // Preserve original value without trimming to maintain leading/trailing spaces
     
     // Use modern API if available, fallback to legacy method
     if (navigator.clipboard?.writeText) {
-      executeModernCopy(trimmedValue);
+      executeModernCopy(value);
     } else {
-      executeLegacyCopy(trimmedValue);
+      executeLegacyCopy(value);
     }
   }
 
@@ -3083,11 +3085,13 @@ function init() {
         finishEditing(true);
         document.removeEventListener("click", handleClickOutside);
         e.preventDefault();
+        e.stopPropagation();
       } else if (e.key === "Escape") {
         // Cancel changes
         finishEditing(false);
         document.removeEventListener("click", handleClickOutside);
         e.preventDefault();
+        e.stopPropagation();
       } else if (e.key === "Tab") {
         // Save and move to next cell with continuous navigation
         finishEditing(true);
@@ -3119,6 +3123,7 @@ function init() {
         }, 10);
         
         e.preventDefault();
+        e.stopPropagation();
       }
     });
   }
@@ -3131,7 +3136,7 @@ function init() {
       // Save changes
       const currentRow = parseInt(editingCell.dataset.row);
       const currentCol = parseInt(editingCell.dataset.col);
-      const newValue = editingCell.querySelector('.cell-edit-input').value.trim();
+      const newValue = editingCell.querySelector('.cell-edit-input').value;
       
       // Update data
       data[currentRow][currentCol] = newValue;
