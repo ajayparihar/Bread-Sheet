@@ -12,25 +12,38 @@
      - Uses semantic HTML5 elements (nav, main, section) for proper document outline
      - Implements proper heading hierarchy for screen readers
      - Follows WAI-ARIA guidelines for complex UI components
+     - Leverages landmarks for improved navigation and structure discovery
   
   2. ACCESSIBILITY FEATURES:
-     - Skip links for keyboard navigation
+     - Skip links for keyboard navigation (bypassing repetitive content)
      - ARIA live regions for dynamic content announcements
      - Role attributes for custom components (toolbar, tablist, etc.)
-     - Comprehensive labeling and descriptions
+     - Comprehensive labeling and descriptions (aria-label, aria-labelledby, aria-describedby)
      - Screen reader optimized content structure
+     - Keyboard shortcuts with proper ARIA support
+     - Focus management for modals and interactive elements
   
   3. RESPONSIVE DESIGN:
      - Mobile-first approach with progressive enhancement
      - Flexible layout system using CSS Grid and Flexbox
-     - Touch-friendly interface elements
+     - Touch-friendly interface elements (minimum 44px touch targets)
+     - Viewport configuration for mobile device compatibility
+     - Progressive Web App (PWA) metadata and configuration
   
   4. COMPONENT ARCHITECTURE:
-     - Navigation bar with tools and controls
-     - Welcome page for first-time users
-     - Data view with table display and interaction
-     - Modal dialogs for help and tours
-     - Toast notification system
+     - Navigation bar: Fixed-position primary navigation with app branding and controls
+     - Welcome page: Initial landing experience for new users with file upload UI
+     - Data view: Interactive data table with keyboard navigation and cell editing
+     - Modal dialogs: Help system and interactive tour experience
+     - Toast notification system: Non-intrusive user feedback mechanism
+     - Hidden utilities: File input, loading indicators, and screen reader announcements
+  
+  5. DESIGN SYSTEM IMPLEMENTATION:
+     - Consistent spacing and sizing based on 4px grid
+     - Dual theme support (light/dark) with smooth transitions
+     - Minimalist flat design with subtle depth through shadows
+     - Consistent visual feedback for all interaction states
+     - High contrast color schemes for optimal readability
 -->
 
 <!DOCTYPE html>
@@ -40,6 +53,15 @@
       META TAGS SECTION:
       Essential meta tags for proper document rendering, SEO optimization,
       mobile compatibility, and progressive web app functionality
+      
+      META TAG PURPOSES:
+      - charset: Defines character encoding for international text support
+      - viewport: Controls responsive layout behavior on mobile devices
+      - description: Provides SEO-friendly content summary for search engines
+      - theme-color: Sets browser UI elements color for brand consistency
+      - mobile-web-app-capable: Enables fullscreen PWA experience on Android
+      - apple-mobile-web-app-capable: Enables fullscreen PWA experience on iOS
+      - apple-mobile-web-app-status-bar-style: Controls iOS status bar appearance
     -->
     
     <!-- Character encoding - UTF-8 for international character support -->
@@ -108,6 +130,14 @@
       Provides keyboard users with quick navigation options to main content areas.
       These links are visually hidden but become visible when focused via keyboard.
       Essential for screen reader users and keyboard-only navigation.
+      
+      IMPLEMENTATION DETAILS:
+      - Positioned off-screen by default (visually hidden)
+      - Become visible and positioned on-screen when focused
+      - Link to major content landmarks via ID references
+      - Satisfy WCAG 2.1 Success Criterion 2.4.1 (Bypass Blocks)
+      - Target both main content area and data table for efficient navigation
+      - Use high contrast colors for optimal visibility when activated
     -->
     <a href="#main-content" class="skip-link">Skip to main content</a>
     <a href="#data-table" class="skip-link">Skip to data table</a>
@@ -117,10 +147,23 @@
       Fixed-position navigation bar containing application branding, search functionality,
       and primary action buttons. Uses semantic nav element with proper ARIA labeling.
       
-      Layout Structure:
-      - Left: Application title and version badge
+      DESIGN RATIONALE:
+      - Fixed positioning ensures persistent access to core functionality
+      - Three-section layout provides visual balance and functional grouping
+      - High z-index ensures navigation remains above all content
+      - Subtle border provides visual separation from main content
+      
+      LAYOUT STRUCTURE:
+      - Left: Application title and version badge for branding
       - Center: Search functionality (shown when data is loaded)
-      - Right: Import, theme toggle, tools, and export controls
+      - Right: Primary actions (import, theme toggle, tools, export)
+      
+      ACCESSIBILITY CONSIDERATIONS:
+      - Semantic nav element with aria-label for landmark navigation
+      - Proper heading hierarchy with app title as h1
+      - Icon buttons include text alternatives for screen readers
+      - Consistent focus indicators for keyboard navigation
+      - Keyboard shortcuts with proper ARIA attributes
     -->
     <nav class="navbar" role="navigation" aria-label="Main navigation">
       <div class="nav-left">
@@ -134,11 +177,21 @@
         Contains the search component that appears when data is loaded.
         Implements live search with debounced input handling and visual highlighting.
         
-        Accessibility Features:
-        - Proper search landmark role
-        - Screen reader instructions
-        - Clear button with descriptive labeling
-        - ARIA live regions for search result announcements
+        COMPONENT BEHAVIOR:
+        - Initially hidden, becomes visible when data is loaded
+        - Performs live search with optimized debounce (300ms)
+        - Highlights matching text visually in table cells
+        - Auto-scrolls to first match for better UX
+        - Provides clear button when search has content
+        - Announces results count to screen readers
+        
+        ACCESSIBILITY FEATURES:
+        - Proper search landmark role for semantic structure
+        - Comprehensive labeling (aria-label, aria-describedby)
+        - Screen reader instructions for search behavior
+        - Clear button with descriptive aria-label
+        - ARIA live regions for dynamic result announcements
+        - Keyboard support for search interaction
       -->
       <div class="nav-center">
         <!-- Search container - initially hidden, shown when data is available -->
@@ -284,6 +337,21 @@
       Primary content container using semantic main element.
       Contains two main views: welcome page and data view.
       Implements proper ARIA landmarks for navigation.
+      
+      COMPONENT ARCHITECTURE:
+      - Uses semantic <main> element with role="main" for landmark navigation
+      - Implements view management system with two primary states:
+        1. Welcome Page: Initial state, shown when no data is loaded
+        2. Data View: Active state, shown when spreadsheet data is displayed
+      - Manages view transitions with smooth animations
+      - Maintains proper focus management during view changes
+      - Implements progressive enhancement for feature availability
+      
+      ACCESSIBILITY CONSIDERATIONS:
+      - Proper landmark identification with ID and role attributes
+      - Consistent heading hierarchy within each view
+      - Appropriate ARIA live regions for dynamic content changes
+      - Well-structured content flow for screen reader navigation
     -->
     <main id="main-content" class="main-content" role="main">
       <!-- 
@@ -291,12 +359,26 @@
         Initial landing page displayed when no data file is loaded.
         Provides file upload interface with drag-and-drop functionality.
         
-        Features:
-        - Prominent application branding and description
-        - Drag-and-drop upload area with visual feedback
-        - File format support indicators
-        - Accessibility-optimized upload interface
-        - Mobile-friendly touch interactions
+        COMPONENT DESIGN RATIONALE:
+        - Centered layout for prominent visual focus and clear user path
+        - Clear hierarchy with prominent app identity and purpose statement
+        - Highly visible upload area with multiple interaction methods
+        - Explicit file format support indicators to prevent user errors
+        - Consistent visual styling with main application design system
+        
+        INTERACTION FEATURES:
+        - Prominent application branding and description for orientation
+        - Drag-and-drop upload area with intuitive visual feedback
+        - File format support indicators for user guidance
+        - Alternative file selection button for accessibility and familiarity
+        - Visual feedback during drag operations (border highlight)
+        
+        ACCESSIBILITY CONSIDERATIONS:
+        - Multiple input methods (drag-drop, button click)
+        - Optimized keyboard accessibility with proper tab sequence
+        - Comprehensive ARIA attributes for screen reader users
+        - Clear instructions for all interaction methods
+        - Mobile-friendly touch interactions with sufficient target sizes
       -->
       <section id="welcomePage" class="welcome-page" role="region" aria-labelledby="welcome-heading">
         <div class="welcome-content">
@@ -357,17 +439,28 @@
         Main data display area shown when a file has been successfully loaded.
         Contains the spreadsheet table with interactive features.
         
-        Components:
-        - Sheet tabs (for multi-sheet files)
-        - Data table with keyboard navigation
-        - Cell editing capabilities
-        - Search result highlighting
+        COMPONENT ARCHITECTURE:
+        - Two-tiered structure with sheet selector and data display
+        - Dynamically generated table based on imported data
+        - Properly structured with thead/tbody for semantic markup
+        - Implements interactive cell system with editing capabilities
+        - Maintains original data structure with transformation capabilities
         
-        Accessibility Features:
-        - Proper table structure with headers
-        - ARIA grid roles for complex table interactions
-        - Live region for status updates
-        - Keyboard navigation support
+        INTERACTIVE FEATURES:
+        - Sheet tabs for multi-sheet Excel files with tab-based navigation
+        - Data table with cell-level keyboard navigation grid
+        - Cell editing with double-click or Enter key activation
+        - Search result highlighting with automatic scrolling
+        - Copy functionality with clipboard integration
+        
+        ACCESSIBILITY IMPLEMENTATION:
+        - Proper table structure with appropriate headers and cells
+        - ARIA grid roles for complex table interactions and navigation
+        - Live region for dynamic status updates and announcements
+        - Comprehensive keyboard navigation with arrow keys, tab, and shortcuts
+        - Focus management for active cell tracking and highlighting
+        - Screen reader announcements for state changes and operations
+        - Cell content labeling with position information
       -->
       <section id="dataView" class="data-view hidden" role="region" aria-labelledby="data-heading">
         <!-- Screen reader heading for data section -->
@@ -399,6 +492,19 @@
       SYSTEM UI COMPONENTS:
       Supporting UI elements for file handling, user feedback, and accessibility.
       These components are dynamically shown/hidden based on user interactions.
+      
+      COMPONENT CATEGORIES:
+      1. Hidden Utilities: Elements that provide functionality but aren't directly visible
+      2. Status Indicators: Loading spinners and progress indicators
+      3. Notification System: Toast messages for user feedback
+      4. Accessibility Aids: Screen reader announcement regions
+      5. Modal Dialogs: Help system and interactive tour overlays
+      
+      IMPLEMENTATION APPROACH:
+      - Progressive disclosure: Components appear only when needed
+      - Non-intrusive design: Minimal disruption to primary task flow
+      - Responsive behavior: Adapts to viewport and interaction context
+      - Accessible implementation: All components follow ARIA best practices
     -->
     
     <!-- 
@@ -406,6 +512,17 @@
       Standard HTML file input element that's visually hidden but programmatically accessible.
       Triggered by import button clicks and drag-and-drop operations.
       Supports multiple file formats with proper MIME type validation.
+      
+      IMPLEMENTATION DETAILS:
+      - Visually hidden with CSS but still accessible to screen readers
+      - Accepts specific file types through the 'accept' attribute
+      - Triggered programmatically via JavaScript click() method
+      - Supports multiple MIME types for comprehensive format support:
+        * Excel: .xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel
+        * CSV: .csv, text/csv
+        * Text: .txt, text/plain
+      - Properly labeled with aria-label for screen reader announcement
+      - File selection triggers the handleFileUpload() function in script.js
     -->
     <input
       type="file"
@@ -419,11 +536,26 @@
       LOADING INDICATOR COMPONENT:
       Provides visual and accessible feedback during file processing operations.
       
-      Features:
-      - Animated spinner for visual users
-      - Progress bar for large file operations
-      - Dynamic text updates based on operation type
-      - Screen reader announcements via ARIA live regions
+      DESIGN RATIONALE:
+      - Centered overlay ensures visibility regardless of viewport size
+      - Semi-transparent backdrop maintains context while showing progress
+      - Animated elements communicate ongoing activity visually
+      - Progressive disclosure of information based on operation complexity
+      
+      COMPONENT FEATURES:
+      - Animated circular spinner for continuous visual feedback
+      - Horizontal progress bar for percentage-based operations (large files)
+      - Dynamic text message updated based on current operation type
+      - Smooth fade transitions for appearing/disappearing
+      - Proper z-index to appear above other UI elements
+      
+      ACCESSIBILITY IMPLEMENTATION:
+      - ARIA live region for dynamic status announcements
+      - Role="status" identifies purpose to screen readers
+      - aria-live="polite" for non-interrupting announcements
+      - aria-atomic="true" ensures complete message is announced
+      - Visual elements marked as aria-hidden="true" when redundant
+      - Text messages use plain language for clarity
     -->
     <div id="loadingIndicator" class="loading-indicator hidden" role="status" aria-live="polite" aria-atomic="true">
       <!-- Animated loading spinner -->
@@ -443,14 +575,45 @@
       Container for temporary notification messages.
       Provides user feedback for actions like copy, import, export, errors, etc.
       Uses ARIA live regions for screen reader accessibility.
+      
+      COMPONENT ARCHITECTURE:
+      - Fixed-position container at the bottom of the viewport
+      - Stacking system for multiple simultaneous notifications
+      - Auto-dismissing with configurable duration based on importance
+      - Type-based styling (success, error, warning, info)
+      - Progressive animation for appearing and disappearing
+      
+      NOTIFICATION TYPES:
+      - Success: Confirmation of completed actions (green)
+      - Error: Problems requiring attention (red)
+      - Warning: Potential issues needing awareness (amber)
+      - Info: Neutral information and tips (blue)
+      
+      ACCESSIBILITY FEATURES:
+      - ARIA live region with assertive priority for important messages
+      - aria-atomic="true" ensures entire message is announced
+      - Role="alert" identifies purpose to assistive technologies
+      - Type-specific aria-label prefixes for context ("Error: message text")
+      - Sufficient color contrast for all notification types
     -->
     <div id="toastContainer" class="toast-container" aria-live="assertive" aria-atomic="true" role="alert"></div>
     
     <!-- 
       ACCESSIBILITY LIVE REGIONS:
       Hidden ARIA live regions for screen reader announcements.
-      - Polite: Non-urgent announcements (search results, status updates)
-      - Assertive: Important announcements (errors, critical status changes)
+      Provide dynamic content updates to screen reader users without losing focus context.
+      
+      IMPLEMENTATION DETAILS:
+      - Two separate announcement channels with different priorities:
+        1. Polite: Non-interrupting announcements for status updates, search results,
+           and informational messages that don't require immediate attention
+        2. Assertive: Important announcements that interrupt current speech for
+           critical errors, warnings, and status changes requiring immediate attention
+      
+      - Both regions use aria-atomic="true" to ensure complete messages are announced
+      - Visually hidden with sr-only class but still accessible to screen readers
+      - Content dynamically updated by JavaScript announceForScreenReaders() function
+      - Messages are temporarily stored and then cleared to prevent duplicate announcements
     -->
     <div id="aria-live-polite" aria-live="polite" aria-atomic="true" class="sr-only"></div>
     <div id="aria-live-assertive" aria-live="assertive" aria-atomic="true" class="sr-only"></div>
