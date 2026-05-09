@@ -74,11 +74,7 @@
   --accent-error: #DC2626;    /* Error states - red */
   --accent-info: #388497;     /* Information states - cyan */
   
-  /* Focus and interaction states - Enhanced for better visibility */
-  --focus-ring: 0 0 0 2px #2563EB;  /* Blue focus ring for better visibility */
-  --focus-ring-offset: 0 0 0 4px rgba(37, 99, 235, 0.3);
-  --focus-visible: 2px solid #2563EB;
-  --focus-visible-offset: 2px;
+  --focus-visible-offset: 1px;
   
   /**
    * SPACING SYSTEM
@@ -197,6 +193,10 @@ body {
   /* Dark theme accent colors */
   --accent-primary: #FDFDFD;
   --accent-primary-hover: #F5F5F5;
+  
+  /* Modular focus styles for dark theme */
+  --focus-ring: 0 0 0 2px rgba(253, 253, 253, 0.1);
+  --focus-visible: 1px solid #FDFDFD;
 }
 
 /* Light Theme */
@@ -216,6 +216,10 @@ body.light-theme {
   /* Light theme accent colors */
   --accent-primary: #131313;
   --accent-primary-hover: #0F0F0F;
+  
+  /* Modular focus styles for light theme */
+  --focus-ring: 0 0 0 2px rgba(19, 19, 19, 0.08);
+  --focus-visible: 1px solid #131313;
 }
 
 /* Screen Reader Only Content */
@@ -802,8 +806,6 @@ body.light-theme .browse-button:hover {
 /* Data View */
 .data-view {
   height: 100%;
-  border: ;
-  border: #16A34A;
   background-color: var(--bg-primary);
   position: relative;
 }
@@ -1203,7 +1205,7 @@ td.editing {
   border-radius: var(--radius-full);
   transition: width var(--transition-normal) ease-out;
   width: 0%;
-  box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 8px rgba(115, 115, 115, 0.3);
 }
 
 /* Screen reader only content */
@@ -1896,9 +1898,9 @@ td.editing {
 
 .tour-highlight {
   position: absolute;
-  border: 2px solid var(--accent-primary);
+  border: 1px solid var(--accent-primary);
   border-radius: var(--radius);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+  box-shadow: 0 0 0 2px rgba(115, 115, 115, 0.1);
   z-index: 10000;
   pointer-events: none;
   transition: all var(--transition-normal);
@@ -2202,9 +2204,9 @@ a:focus-visible,
 /* Table cell focus indicator */
 td:focus-visible,
 th:focus-visible {
-  outline: 3px solid #2563EB !important;
+  outline: 1px solid var(--accent-primary) !important;
   outline-offset: 2px !important;
-  background-color: rgba(37, 99, 235, 0.1) !important;
+  background-color: rgba(115, 115, 115, 0.05) !important;
 }
 
 /* High contrast mode support */
@@ -2379,10 +2381,26 @@ th:focus-visible {
   position: relative;
   background: var(--bg-secondary);
   color: var(--text-primary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   padding: var(--space-2) var(--space-3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.tooltip-icon {
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+  margin-top: 1px; /* Align with the first line of text */
+  display: none; /* Hidden by default, shown when content exists */
+}
+
+.tooltip-icon:not(:empty) {
+  display: block;
 }
 
 .tooltip-text {
@@ -2396,8 +2414,9 @@ th:focus-visible {
   width: 8px;
   height: 8px;
   background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-medium);
   transform: rotate(45deg);
+  z-index: -1;
 }
 
 /* Tooltip positioning */
@@ -2455,14 +2474,18 @@ th:focus-visible {
 }
 
 .tooltip.help .tooltip-content {
-  background: var(--accent-info);
-  color: white;
-  border-color: var(--accent-info);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-left: 4px solid var(--accent-primary);
+}
+
+.tooltip.help .tooltip-icon {
+  color: var(--accent-primary);
 }
 
 .tooltip.help .tooltip-arrow {
-  background: var(--accent-info);
-  border-color: var(--accent-info);
+  background: var(--bg-tertiary);
+  border-color: var(--border-medium);
 }
 
 .tooltip.shortcut {
@@ -2471,7 +2494,12 @@ th:focus-visible {
 
 .tooltip.shortcut .tooltip-content {
   background: var(--bg-tertiary);
-  border-color: var(--border-medium);
+  color: var(--text-primary);
+  border-left: 4px solid var(--accent-primary);
+}
+
+.tooltip.shortcut .tooltip-icon {
+  color: var(--accent-primary);
 }
 
 .tooltip.shortcut .tooltip-arrow {

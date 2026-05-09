@@ -2472,8 +2472,9 @@ function init() {
   initializeTooltips();
   
   // Show tooltip for element
-  function showTooltip(element, content, type = 'help', position = 'top') {
+  function showTooltip(element, content, type = 'help', position = 'bottom') {
     const tooltip = getElement('tooltip');
+    const tooltipIcon = tooltip.querySelector('.tooltip-icon');
     const tooltipText = tooltip.querySelector('.tooltip-text');
     
     if (!tooltip || !tooltipText) return;
@@ -2483,7 +2484,20 @@ function init() {
       clearTimeout(tooltipTimeout);
     }
     
-    // Set content based on type
+    // Set icon based on type (matching toast style)
+    const iconConfig = {
+      'help': 'ℹ',
+      'shortcut': 'ℹ',
+      'warning': '⚠',
+      'error': '✕',
+      'success': '✓'
+    };
+    
+    if (tooltipIcon) {
+      tooltipIcon.textContent = iconConfig[content.type || type] || 'ℹ';
+    }
+    
+    // Set content
     if (content.shortcut) {
       tooltipText.innerHTML = `${content.text}<br><small>Shortcut: <kbd>${content.shortcut}</kbd></small>`;
     } else {
@@ -2493,11 +2507,12 @@ function init() {
     // Set tooltip class and position
     tooltip.className = `tooltip ${content.type || type} ${position}`;
     
+    // Show tooltip first so it has dimensions for positioning
+    tooltip.classList.remove('hidden');
+    
     // Position tooltip relative to element
     positionTooltip(tooltip, element, position);
     
-    // Show tooltip
-    tooltip.classList.remove('hidden');
     currentTooltipElement = element;
     
     // Set ARIA attributes for accessibility
@@ -2572,6 +2587,12 @@ function init() {
     Object.keys(TOOLTIP_CONTENT).forEach(elementId => {
       const element = getElement(elementId);
       if (element) {
+        // Remove standard title attribute to prevent double tooltips (browser default)
+        // Store it if we need it for fallback, but here we use TOOLTIP_CONTENT
+        if (element.hasAttribute('title')) {
+          element.removeAttribute('title');
+        }
+        
         // Add hover listeners
         element.addEventListener('mouseenter', (e) => {
           if (!isMobileDevice()) {
@@ -2595,6 +2616,10 @@ function init() {
         element.addEventListener('blur', () => {
           hideTooltip();
         });
+        
+        // Hide tooltip immediately when clicking the element
+        element.addEventListener('mousedown', hideTooltip);
+        element.addEventListener('click', hideTooltip);
       }
     });
     
