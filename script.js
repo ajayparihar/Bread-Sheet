@@ -454,6 +454,22 @@ function init() {
   // Show/hide search bar based on data state
   function toggleSearchBar(show) {
     searchContainer.classList.toggle('visible', show);
+    if (show && currentFileName) {
+      updateSearchPlaceholder(currentFileName);
+    } else {
+      updateSearchPlaceholder();
+    }
+  }
+  
+  // Update search bar placeholder with file name
+  function updateSearchPlaceholder(fileName) {
+    if (searchInput) {
+      if (fileName) {
+        searchInput.placeholder = `Search Data in ${fileName}`;
+      } else {
+        searchInput.placeholder = "Search Data...";
+      }
+    }
   }
   
   // Switch between welcome page and data view
@@ -1588,6 +1604,8 @@ function init() {
     currentFileName = "";
     currentFile = null;
     
+    // Reset search placeholder
+    updateSearchPlaceholder();
     
     // Clear content and show welcome page
     const output = document.getElementById("output");
