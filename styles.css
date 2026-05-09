@@ -1020,6 +1020,35 @@ body.light-theme td.keyboard-focus {
   color: #FDFDFD !important; /* Light text on dark background */
 }
 
+/* Duplicate data highlighting */
+td.duplicate-highlight {
+  background-color: rgba(253, 253, 253, 0.1) !important; /* 10% intensity of white */
+  color: var(--text-primary) !important;
+}
+
+body.light-theme td.duplicate-highlight {
+  background-color: rgba(19, 19, 19, 0.08) !important; /* 10% intensity of black */
+  color: var(--text-primary) !important;
+}
+
+.duplicate-match {
+  background-color: rgba(253, 253, 253, 0.2);
+  color: inherit;
+  border-bottom: 1.5px solid var(--accent-primary);
+  font-weight: 600;
+  border-radius: 2px;
+}
+
+body.light-theme .duplicate-match {
+  background-color: rgba(19, 19, 19, 0.1);
+  border-bottom: 1.5px solid var(--accent-primary);
+}
+
+/* Ensure duplicate highlights don't override active search highlights */
+td.search-highlight.duplicate-highlight {
+  background-color: var(--bg-tertiary) !important;
+}
+
 td.editing {
   padding: 0;
 }

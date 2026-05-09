@@ -445,6 +445,11 @@ function init() {
       cell.classList.remove(SEARCH.HIGHLIGHT_CLASS);
       restoreOriginalCellText(cell);
     });
+
+    // Re-highlight duplicates if a cell was previously selected/copied
+    if (lastClickedCell) {
+      highlightDuplicateData(lastClickedCell);
+    }
     
     // Clear search results announcement
     announceForScreenReaders('Search cleared');
@@ -1294,7 +1299,7 @@ function init() {
   }
 
   // Search helper functions
-  function highlightTextInCell(cell, searchText) {
+  function highlightTextInCell(cell, searchText, className = 'search-match') {
     // Store the EXACT original text content first
     const originalText = cell.textContent;
     
@@ -1312,7 +1317,7 @@ function init() {
     regex.lastIndex = 0;
     
     // Create highlighted version by replacing matches (using span to avoid browser mark defaults)
-    const highlightedText = originalText.replace(regex, '<span class="search-match">$1</span>');
+    const highlightedText = originalText.replace(regex, `<span class="${className}">$1</span>`);
     
     // Only update if highlighting was actually applied and different from original
     if (highlightedText !== originalText && highlightedText.includes('<span')) {
@@ -2284,14 +2289,69 @@ function init() {
     }
   }
 
-  // Highlight the clicked cell
+  // Highlight the clicked cell and duplicates
   function highlightCell(cell) {
-    if (lastClickedCell) lastClickedCell.classList.remove("last-clicked");
+    // First clear any previous duplicate highlights
+    clearDuplicateHighlights();
+    
+    if (lastClickedCell) {
+      lastClickedCell.classList.remove("last-clicked");
+    }
+    
     cell.classList.add("last-clicked");
     lastClickedCell = cell;
     
+    // Highlight all other cells with matching data
+    highlightDuplicateData(cell);
+    
     // Also set keyboard focus
     focusCell(cell);
+  }
+
+  /**
+   * Highlights all cells that contain the same data as the selected cell.
+   * Implements subtle highlighting for exact matches and word-level
+   * highlighting for partial matches.
+   */
+  function highlightDuplicateData(selectedCell) {
+    // Get text to match, ignoring whitespace
+    const textToMatch = selectedCell.textContent.trim();
+    
+    // Only proceed if we have enough content to match (prevent noise with single chars)
+    if (!textToMatch || textToMatch.length < 2) return;
+    
+    const lowerMatch = textToMatch.toLowerCase();
+    const allCells = document.querySelectorAll('#data-table td');
+    
+    allCells.forEach(cell => {
+      // Skip the selected cell itself
+      if (cell === selectedCell) return;
+      
+      const cellText = cell.textContent.trim();
+      const lowerCell = cellText.toLowerCase();
+      
+      // Check if the cell contains our match text
+      if (lowerCell.includes(lowerMatch)) {
+        // Apply subtle cell-level highlighting
+        cell.classList.add('duplicate-highlight');
+        
+        // Specially highlight the exact word further (partial match)
+        // using the same utility as search but with a different class
+        highlightTextInCell(cell, textToMatch, 'duplicate-match');
+      }
+    });
+  }
+
+  /**
+   * Clears all duplicate data highlights from the table
+   */
+  function clearDuplicateHighlights() {
+    const highlightedCells = document.querySelectorAll('.duplicate-highlight');
+    highlightedCells.forEach(cell => {
+      cell.classList.remove('duplicate-highlight');
+      // Use existing utility to restore original text and remove spans
+      restoreOriginalCellText(cell);
+    });
   }
 
   /**
@@ -2989,6 +3049,8 @@ function init() {
           if (e.ctrlKey || e.metaKey) {
             e.preventDefault();
             copyToClipboard(currentFocusedCell.textContent);
+            // Trigger visual highlight and duplicates on explicit copy
+            highlightCell(currentFocusedCell);
           }
           break;
         case "Enter":
