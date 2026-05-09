@@ -257,6 +257,53 @@ function isMobileDevice() {
 }
 
 /**
+ * SANITIZATION UTILITIES
+ * Functions for securing content and preventing XSS attacks
+ */
+
+/**
+ * Sanitizes cell content to prevent XSS and ensure data integrity
+ * 
+ * @param {*} content - The raw cell content
+ * @returns {string} Sanitized string content
+ */
+function sanitizeCellContent(content) {
+  if (content === null || content === undefined) return "";
+  
+  // Convert to string and trim
+  let sanitized = String(content).trim();
+  
+  // Remove any potentially dangerous characters or patterns
+  // This is a basic sanitization to prevent common injection attacks
+  sanitized = sanitized.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gmi, "");
+  sanitized = sanitized.replace(/on\w+="[^"]*"/gmi, "");
+  sanitized = sanitized.replace(/javascript:/gmi, "");
+  
+  return sanitized;
+}
+
+/**
+ * Sanitizes content for HTML output by escaping special characters
+ * 
+ * @param {*} content - The content to escape
+ * @returns {string} HTML-escaped string
+ */
+function sanitizeHtml(content) {
+  if (content === null || content === undefined) return "";
+  
+  const stringContent = String(content);
+  const map = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#039;"
+  };
+  
+  return stringContent.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+/**
  * MAIN APPLICATION INITIALIZATION SYSTEM
  * 
  * This is the core initialization function that orchestrates the entire application startup
