@@ -212,7 +212,7 @@
             <input
               type="text"
               id="searchInput"
-              placeholder="Search data..."
+              placeholder="Search Data..."
               aria-label="Search through table data"
               aria-describedby="search-instructions"
               role="searchbox"
@@ -469,6 +469,20 @@
         <!-- Live region for dynamic status announcements -->
         <div id="data-status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
         
+        <!-- Visible status area for import/export operations -->
+        <div id="operation-status" class="operation-status hidden" role="status" aria-live="polite">
+          <div class="status-content">
+            <span class="status-icon" aria-hidden="true"></span>
+            <span class="status-message"></span>
+            <button class="status-close" aria-label="Close status message">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2"/>
+                <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
         <!-- Main data output container where table content is dynamically generated -->
         <div id="output" role="region" aria-label="Spreadsheet data table" tabindex="0"></div>
       </section>
@@ -654,6 +668,15 @@
           <button id="startTour" class="help-button primary">Take a Tour</button>
           <button id="closeHelpBottom" class="help-button">Close</button>
         </div>
+      </div>
+    </div>
+    
+    <!-- Tooltip Component -->
+    <div id="tooltip" class="tooltip hidden" role="tooltip">
+      <div class="tooltip-content">
+        <span class="tooltip-icon" aria-hidden="true"></span>
+        <div class="tooltip-text"></div>
+        <div class="tooltip-arrow"></div>
       </div>
     </div>
     
