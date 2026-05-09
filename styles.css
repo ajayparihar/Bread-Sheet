@@ -1245,6 +1245,7 @@ td.editing {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  pointer-events: none;
 }
 
 .toast {
@@ -1262,6 +1263,7 @@ td.editing {
   transition: all var(--transition-normal);
   position: relative;
   padding-top: var(--space-5); /* Extra top padding for close button */
+  pointer-events: none;
 }
 
 .toast.show {
@@ -1335,6 +1337,7 @@ td.editing {
   top: var(--space-2);
   right: var(--space-2);
   z-index: 1;
+  pointer-events: auto;
 }
 
 .toast-close:hover {
@@ -2246,6 +2249,7 @@ th:focus-visible {
   transition: all var(--transition-normal);
   transform: translateX(calc(100% + var(--space-6)));
   opacity: 0;
+  pointer-events: none;
 }
 
 .operation-status:not(.hidden) {
@@ -2293,6 +2297,7 @@ th:focus-visible {
   cursor: pointer;
   transition: all var(--transition-fast);
   flex-shrink: 0;
+  pointer-events: auto;
 }
 
 .status-close:hover,
